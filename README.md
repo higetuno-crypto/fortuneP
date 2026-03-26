@@ -1,0 +1,2 @@
+# fortuneP
+占い

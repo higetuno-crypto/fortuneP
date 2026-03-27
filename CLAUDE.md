@@ -10,6 +10,7 @@
 | `docs/brand-voice.md` | UIテキスト・コピー生成 |
 | `docs/ui-principles.md` | UI実装・スタイル設計 |
 | `docs/information-architecture.md` | 画面構成・ルーティング・データフロー |
+| `docs/technical-plan.md` | 技術スタック・ライブラリ・設定方針 |
 | `docs/autonomous-operation.md` | 自走可否の判断 |
 
 ## アーキテクチャ方針

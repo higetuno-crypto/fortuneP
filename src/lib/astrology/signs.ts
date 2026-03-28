@@ -30,3 +30,8 @@ export const SIGN_BOUNDARIES: Record<ZodiacSign, { month: number; day: number }>
   aquarius:    { month: 1,  day: 20 },
   pisces:      { month: 2,  day: 19 },
 };
+
+/** 黄経（度）→ ZodiacSign */
+export function longitudeToSign(lon: number): ZodiacSign {
+  return ZODIAC_SIGNS[Math.floor(((lon % 360) + 360) % 360 / 30)];
+}

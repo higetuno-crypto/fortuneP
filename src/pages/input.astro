@@ -1,189 +1,390 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import "../styles/global.css";
-
-const currentYear = new Date().getFullYear();
 ---
 
 <Layout title="生年月日を入力">
-  <main
-    class="starfield relative flex min-h-screen flex-col items-center bg-gradient-to-b from-fp-dark via-fp-navy to-fp-dark px-6 py-12"
-  >
-    <!-- 背景グロー -->
-    <div
-      class="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 h-64 w-64 rounded-full bg-fp-glow/10 blur-[80px]"
-    >
+  <main class="relative flex min-h-screen flex-col overflow-hidden bg-fp-navy select-none">
+
+    <!-- 背景 -->
+    <div class="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#06081a] via-fp-navy to-[#140d35]"></div>
+    <div class="pointer-events-none absolute inset-0 overflow-hidden">
+      <div class="bokeh-orb" style="width:70px;height:70px;top:0%;left:5%;opacity:0.6"></div>
+      <div class="bokeh-orb" style="width:45px;height:45px;top:2%;left:55%;opacity:0.5;animation-delay:1.2s"></div>
+      <div class="bokeh-orb" style="width:60px;height:60px;top:1%;right:8%;opacity:0.65;animation-delay:0.7s"></div>
+      <div class="bokeh-orb" style="width:30px;height:30px;top:6%;left:30%;opacity:0.4;animation-delay:2s"></div>
+    </div>
+    <div class="pointer-events-none absolute inset-0">
+      <span class="sparkle" style="top:10%;left:15%">✦</span>
+      <span class="sparkle" style="top:14%;left:70%;animation-delay:1.2s">✦</span>
+      <span class="sparkle" style="top:8%;left:45%;animation-delay:0.6s">✦</span>
     </div>
 
     <!-- ヘッダー -->
-    <div class="relative z-10 w-full max-w-sm mb-10 fade-in">
-      <a href={import.meta.env.BASE_URL} class="text-fp-pearl/40 text-sm hover:text-fp-pearl/70 transition-colors">
-        ← fortuneP
+    <div class="relative z-10 flex items-center justify-between px-6 pt-8 pb-0">
+      <button id="btn-back" class="text-fp-pearl/30 text-sm transition-colors hover:text-fp-pearl/60 hidden">
+        ← 戻る
+      </button>
+      <a href={import.meta.env.BASE_URL} class="font-cinzel text-sm text-fp-gold/50 hover:text-fp-gold/80 transition-colors ml-auto">
+        fortuneP
       </a>
-      <h1 class="mt-6 font-serif text-2xl font-light tracking-wide text-fp-pearl heading-glow">
-        あなたの生まれた日を<br />教えてください
-      </h1>
-      <p class="mt-2 text-xs text-fp-pearl/40 leading-relaxed">
-        生年月日だけで太陽星座と月星座を読みます。<br />
-        出生時間・出生地があると、アセンダントも読めます。
-      </p>
     </div>
 
-    <!-- フォーム -->
-    <form
-      method="get"
-      action={`${import.meta.env.BASE_URL}loading`}
-      class="relative z-10 w-full max-w-sm space-y-6 fade-in fade-in-delay-1"
-      id="birth-form"
-    >
-      <!-- 生年月日（必須） -->
-      <div class="glass-card px-5 py-5 space-y-4">
-        <p class="text-xs tracking-widest text-fp-gold/80 uppercase">
-          生年月日 <span class="text-fp-gold">*</span>
-        </p>
+    <!-- 進捗ドット -->
+    <div class="relative z-10 flex justify-center gap-2 mt-6">
+      <div class="prog-dot active" id="dot-1"></div>
+      <div class="prog-dot" id="dot-2"></div>
+      <div class="prog-dot" id="dot-3"></div>
+      <div class="prog-dot" id="dot-4"></div>
+    </div>
 
-        <div>
-          <label class="form-label" for="year">年</label>
-          <input
-            id="year"
-            name="year"
-            type="number"
-            min="1900"
-            max={currentYear}
-            placeholder={String(currentYear - 20)}
-            required
-            class="input-dark"
-          />
+    <!-- ======== ステップコンテナ ======== -->
+    <div class="relative z-10 flex-1 flex flex-col">
+
+      <!-- Step 1: 年 -->
+      <div id="step-1" class="wizard-step active flex-1 flex flex-col items-center justify-center px-8 gap-10">
+        <div class="text-center space-y-2">
+          <p class="step-label">生まれた年は？</p>
+          <p class="step-hint">西暦で入力してください</p>
         </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="form-label" for="month">月</label>
-            <select id="month" name="month" required class="input-dark">
-              <option value="" disabled selected>選択</option>
-              {
-                Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                  <option value={m}>{m}月</option>
-                ))
-              }
-            </select>
-          </div>
-          <div>
-            <label class="form-label" for="day">日</label>
-            <select id="day" name="day" required class="input-dark">
-              <option value="" disabled selected>選択</option>
-              {
-                Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
-                  <option value={d}>{d}日</option>
-                ))
-              }
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <!-- 出生時間（任意） -->
-      <div class="glass-card px-5 py-5 space-y-4">
-        <p class="text-xs tracking-widest text-fp-pearl/50 uppercase">
-          出生時間 <span class="text-fp-pearl/30 text-[10px] normal-case">（任意）</span>
-        </p>
-        <p class="text-[11px] text-fp-pearl/30 -mt-2">
-          分かると、アセンダントも読めます
-        </p>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="form-label" for="hour">時</label>
-            <select id="hour" name="hour" class="input-dark">
-              <option value="">不明</option>
-              {
-                Array.from({ length: 24 }, (_, i) => i).map((h) => (
-                  <option value={h}>{h}時</option>
-                ))
-              }
-            </select>
-          </div>
-          <div>
-            <label class="form-label" for="minute">分</label>
-            <select id="minute" name="minute" class="input-dark">
-              <option value="">不明</option>
-              {
-                [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map((m) => (
-                  <option value={m}>{String(m).padStart(2, "0")}分</option>
-                ))
-              }
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <!-- 出生地（任意） -->
-      <div class="glass-card px-5 py-5 space-y-3">
-        <p class="text-xs tracking-widest text-fp-pearl/50 uppercase">
-          出生地 <span class="text-fp-pearl/30 text-[10px] normal-case">（任意）</span>
-        </p>
         <input
-          id="birthplace"
-          name="birthplace"
-          type="text"
-          placeholder="例：東京、大阪、札幌 など"
-          class="input-dark"
+          id="year-input"
+          type="number"
+          inputmode="numeric"
+          placeholder="例：1995"
+          min="1900"
+          max="2026"
+          class="year-input"
+          autocomplete="off"
         />
-        <p class="text-[11px] text-fp-pearl/30">
-          アセンダントの精度が上がります
-        </p>
+        <p id="year-error" class="text-fp-glow/60 text-sm hidden">正しい年を入力してください</p>
+        <button class="step-next-btn" onclick="goStep1()">次へ</button>
       </div>
 
-      <!-- エラー表示 -->
-      <p
-        id="form-error"
-        class="hidden text-center text-sm text-fp-glow/70"
-      >
-      </p>
+      <!-- Step 2: 月 -->
+      <div id="step-2" class="wizard-step flex-1 flex flex-col items-center justify-center px-6 gap-8">
+        <div class="text-center space-y-2">
+          <p class="step-label">生まれた月は？</p>
+        </div>
+        <div class="month-grid">
+          {Array.from({length: 12}, (_, i) => i + 1).map(m => (
+            <button class="month-btn" data-month={m} onclick={`selectMonth(${m})`}>
+              {m}月
+            </button>
+          ))}
+        </div>
+      </div>
 
-      <!-- 送信ボタン -->
-      <div class="text-center pt-2">
-        <button type="submit" class="btn-gold w-full text-base">
-          結果を見る
+      <!-- Step 3: 日 -->
+      <div id="step-3" class="wizard-step flex-1 flex flex-col items-center justify-center px-8 gap-10">
+        <div class="text-center space-y-2">
+          <p class="step-label">生まれた日は？</p>
+          <p id="step3-sub" class="text-fp-gold/50 text-sm"></p>
+        </div>
+        <input
+          id="day-input"
+          type="number"
+          inputmode="numeric"
+          placeholder="例：15"
+          min="1"
+          max="31"
+          class="year-input"
+          autocomplete="off"
+        />
+        <p id="day-error" class="text-fp-glow/60 text-sm hidden">正しい日を入力してください</p>
+        <button class="step-next-btn" onclick="goStep3()">次へ</button>
+      </div>
+
+      <!-- Step 4: 時間（任意） -->
+      <div id="step-4" class="wizard-step flex-1 flex flex-col items-center justify-center px-8 gap-8">
+        <div class="text-center space-y-2">
+          <p class="step-label">生まれた時間は？</p>
+          <p class="step-hint">わかると、アセンダントも読めます</p>
+        </div>
+
+        <div class="flex gap-4 items-center">
+          <select id="hour-sel" class="time-sel">
+            <option value="">--</option>
+            {Array.from({length: 24}, (_, i) => i).map(h => (
+              <option value={h}>{h}時</option>
+            ))}
+          </select>
+          <span class="text-fp-pearl/30 text-lg">:</span>
+          <select id="min-sel" class="time-sel">
+            <option value="">--</option>
+            {[0,5,10,15,20,25,30,35,40,45,50,55].map(m => (
+              <option value={m}>{String(m).padStart(2,'0')}分</option>
+            ))}
+          </select>
+        </div>
+
+        <!-- 軌道「星を読む」ボタン -->
+        <div class="orbital-sm" onclick="submitForm()">
+          <div class="orb-ring-sm" style="width:110px;height:110px;animation-duration:6s">
+            <div class="orb-dot-sm"></div>
+          </div>
+          <div class="orb-ring-sm" style="width:136px;height:136px;animation-duration:10s;animation-direction:reverse;opacity:0.55">
+            <div class="orb-dot-sm" style="width:4px;height:4px;top:-2px;left:calc(50% - 2px)"></div>
+          </div>
+          <div class="orb-center-sm">
+            <span class="font-sans text-xs font-medium text-fp-dark">星を読む</span>
+          </div>
+        </div>
+
+        <button class="text-fp-pearl/30 text-xs underline underline-offset-4 hover:text-fp-pearl/60 transition-colors" onclick="skipTime()">
+          時間はわからない
         </button>
       </div>
-    </form>
 
-    <p class="relative z-10 mt-8 text-center text-xs text-fp-pearl/20">
-      入力した情報は保存されません
-    </p>
+    </div><!-- /ステップコンテナ -->
   </main>
 </Layout>
 
-<script>
-  const form = document.getElementById("birth-form") as HTMLFormElement;
-  const errorEl = document.getElementById("form-error") as HTMLParagraphElement;
+<style>
+  .font-cinzel { font-family: 'Cinzel', serif; }
 
-  form.addEventListener("submit", (e) => {
-    const year = parseInt(
-      (document.getElementById("year") as HTMLInputElement).value
-    );
-    const month = parseInt(
-      (document.getElementById("month") as HTMLSelectElement).value
-    );
-    const day = parseInt(
-      (document.getElementById("day") as HTMLSelectElement).value
-    );
+  /* ボケ玉 */
+  .bokeh-orb {
+    position: absolute; border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, rgba(230,190,60,1) 0%, rgba(201,168,76,0.4) 40%, transparent 70%);
+    filter: blur(10px);
+    animation: bokeh-float 4s ease-in-out infinite;
+  }
+  .sparkle { position: absolute; font-size: 10px; color: rgba(255,255,255,0.7); animation: sparkle-blink 2.5s ease-in-out infinite; }
+  @keyframes bokeh-float { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-6px) scale(1.05)} }
+  @keyframes sparkle-blink { 0%,100%{opacity:0.8;transform:scale(1)} 50%{opacity:0.2;transform:scale(0.7)} }
 
-    if (!year || !month || !day) {
-      e.preventDefault();
-      errorEl.textContent = "生年月日を入力してください";
-      errorEl.classList.remove("hidden");
-      return;
+  /* 進捗ドット */
+  .prog-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: rgba(201,168,76,0.2);
+    transition: all 0.4s ease;
+  }
+  .prog-dot.active {
+    width: 20px; border-radius: 3px;
+    background: rgba(201,168,76,0.8);
+    box-shadow: 0 0 8px rgba(201,168,76,0.4);
+  }
+
+  /* ウィザードステップ */
+  .wizard-step {
+    display: none;
+    animation: step-in 0.35s ease both;
+  }
+  .wizard-step.active { display: flex; }
+  @keyframes step-in {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* テキスト */
+  .step-label {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.25rem;
+    font-weight: 300;
+    color: rgba(232,224,208,0.95);
+    letter-spacing: 0.05em;
+  }
+  .step-hint { font-size: 0.75rem; color: rgba(232,224,208,0.35); }
+
+  /* 年入力 */
+  .year-input {
+    width: 100%; max-width: 260px;
+    text-align: center;
+    font-size: 2.5rem;
+    font-family: 'Cinzel', serif;
+    color: rgba(201,168,76,0.9);
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(201,168,76,0.3);
+    padding: 8px 0;
+    outline: none;
+    caret-color: rgba(201,168,76,0.8);
+  }
+  .year-input::placeholder { color: rgba(201,168,76,0.2); font-size: 1.5rem; }
+  .year-input:focus { border-bottom-color: rgba(201,168,76,0.7); }
+
+  /* 次へボタン */
+  .step-next-btn {
+    min-width: 140px; min-height: 48px;
+    border-radius: 9999px;
+    border: 1px solid rgba(201,168,76,0.5);
+    background: rgba(201,168,76,0.08);
+    color: rgba(201,168,76,0.9);
+    font-size: 0.875rem;
+    letter-spacing: 0.15em;
+    transition: all 0.2s;
+  }
+  .step-next-btn:active { transform: scale(0.95); background: rgba(201,168,76,0.18); }
+
+  /* 月グリッド */
+  .month-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    width: 100%; max-width: 320px;
+  }
+  .month-btn {
+    height: 52px; border-radius: 12px;
+    border: 1px solid rgba(201,168,76,0.2);
+    background: rgba(255,255,255,0.04);
+    color: rgba(232,224,208,0.7);
+    font-size: 0.875rem;
+    transition: all 0.15s;
+  }
+  .month-btn:active, .month-btn.selected {
+    background: rgba(201,168,76,0.18);
+    border-color: rgba(201,168,76,0.6);
+    color: rgba(201,168,76,1);
+    box-shadow: 0 0 12px rgba(201,168,76,0.2);
+  }
+
+  /* 時間セレクト */
+  .time-sel {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: 12px;
+    color: rgba(232,224,208,0.8);
+    font-size: 1.1rem;
+    padding: 12px 16px;
+    outline: none;
+    min-width: 100px;
+    text-align: center;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  .time-sel:focus { border-color: rgba(201,168,76,0.6); }
+
+  /* 小さい軌道ボタン */
+  .orbital-sm {
+    position: relative;
+    width: 136px; height: 136px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+  .orb-ring-sm {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    border-radius: 50%;
+    border: 1px solid rgba(201,168,76,0.25);
+    animation: ring-spin linear infinite;
+  }
+  .orb-dot-sm {
+    position: absolute;
+    width: 6px; height: 6px; top: -3px; left: calc(50% - 3px);
+    border-radius: 50%;
+    background: rgba(201,168,76,0.9);
+    box-shadow: 0 0 6px rgba(201,168,76,0.5);
+  }
+  .orb-center-sm {
+    position: absolute;
+    width: 76px; height: 76px; border-radius: 50%;
+    background: radial-gradient(circle at 38% 32%, #f5de7a, #c9a84c 55%, #a07830 100%);
+    box-shadow: 0 0 24px rgba(201,168,76,0.4), 0 0 48px rgba(201,168,76,0.15);
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .orbital-sm:active .orb-center-sm { transform: scale(0.93); }
+
+  @keyframes ring-spin {
+    from { transform: translate(-50%,-50%) rotate(0deg); }
+    to   { transform: translate(-50%,-50%) rotate(360deg); }
+  }
+</style>
+
+<script define:vars={{ base: import.meta.env.BASE_URL }}>
+  // 状態
+  const state = { year: null, month: null, day: null, hour: '', minute: '' };
+  let currentStep = 1;
+
+  function setStep(n) {
+    document.querySelectorAll('.wizard-step').forEach(el => el.classList.remove('active'));
+    document.getElementById(`step-${n}`).classList.add('active');
+    // 進捗ドット
+    for (let i = 1; i <= 4; i++) {
+      const dot = document.getElementById(`dot-${i}`);
+      dot.classList.toggle('active', i === n);
     }
+    // 戻るボタン
+    const backBtn = document.getElementById('btn-back');
+    backBtn.classList.toggle('hidden', n === 1);
+    currentStep = n;
+  }
 
-    if (year < 1900 || year > new Date().getFullYear()) {
-      e.preventDefault();
-      errorEl.textContent = "正しい年を入力してください";
-      errorEl.classList.remove("hidden");
-      return;
-    }
-
-    errorEl.classList.add("hidden");
+  // 戻る
+  document.getElementById('btn-back').addEventListener('click', () => {
+    if (currentStep > 1) setStep(currentStep - 1);
   });
+
+  // Step1: 年
+  window.goStep1 = function() {
+    const val = parseInt(document.getElementById('year-input').value);
+    const err = document.getElementById('year-error');
+    if (!val || val < 1900 || val > 2026) {
+      err.classList.remove('hidden');
+      return;
+    }
+    err.classList.add('hidden');
+    state.year = val;
+    setStep(2);
+  };
+
+  // Step1 Enter キー
+  document.getElementById('year-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') window.goStep1();
+  });
+
+  // Step2: 月
+  window.selectMonth = function(m) {
+    state.month = m;
+    document.querySelectorAll('.month-btn').forEach(b => b.classList.remove('selected'));
+    document.querySelector(`[data-month="${m}"]`).classList.add('selected');
+    // 少し待ってから次へ（選択の視覚的フィードバック）
+    setTimeout(() => {
+      document.getElementById('step3-sub').textContent = `${state.year}年 ${state.month}月`;
+      setStep(3);
+    }, 180);
+  };
+
+  // Step3: 日
+  window.goStep3 = function() {
+    const val = parseInt(document.getElementById('day-input').value);
+    const err = document.getElementById('day-error');
+    if (!val || val < 1 || val > 31) {
+      err.classList.remove('hidden');
+      return;
+    }
+    err.classList.add('hidden');
+    state.day = val;
+    setStep(4);
+  };
+
+  document.getElementById('day-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') window.goStep3();
+  });
+
+  // Step4: 提出
+  window.submitForm = function() {
+    const hour = document.getElementById('hour-sel').value;
+    const min  = document.getElementById('min-sel').value;
+    state.hour   = hour;
+    state.minute = min;
+    navigate();
+  };
+
+  window.skipTime = function() {
+    state.hour   = '';
+    state.minute = '';
+    navigate();
+  };
+
+  function navigate() {
+    const p = new URLSearchParams();
+    p.set('year',  state.year);
+    p.set('month', state.month);
+    p.set('day',   state.day);
+    if (state.hour !== '') p.set('hour',   state.hour);
+    if (state.minute !== '') p.set('minute', state.minute);
+    window.location.href = base + 'loading?' + p.toString();
+  }
 </script>

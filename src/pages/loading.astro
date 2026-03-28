@@ -35,25 +35,6 @@ const stars = Array.from({ length: 90 }, () => ({
     <div class="bokeh" style="width:35px;height:35px;bottom:5%;right:10%;animation-delay:1.9s"></div>
   </div>
 
-  <!-- 魔女の帽子 (左) -->
-  <div class="motif" style="left:2%;top:30%;transform:rotate(-12deg) scale(0.5);opacity:0.1" aria-hidden="true">
-    <svg viewBox="0 0 60 70" width="60" fill="none">
-      <path d="M30 5 L7 55 L53 55 Z" stroke="#c9a84c" stroke-width="1.5" stroke-linejoin="round"/>
-      <ellipse cx="30" cy="57" rx="25" ry="7.5" stroke="#c9a84c" stroke-width="1.5"/>
-      <path d="M13 51 Q30 44 47 51" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/>
-      <text x="25" y="28" font-size="10" fill="#c9a84c">★</text>
-    </svg>
-  </div>
-  <!-- 魔女の帽子 (右) -->
-  <div class="motif" style="right:2%;top:15%;transform:rotate(10deg) scale(0.6);opacity:0.09" aria-hidden="true">
-    <svg viewBox="0 0 60 70" width="60" fill="none">
-      <path d="M30 5 L7 55 L53 55 Z" stroke="#c9a84c" stroke-width="1.5" stroke-linejoin="round"/>
-      <ellipse cx="30" cy="57" rx="25" ry="7.5" stroke="#c9a84c" stroke-width="1.5"/>
-      <path d="M13 51 Q30 44 47 51" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/>
-      <text x="25" y="28" font-size="10" fill="#c9a84c">★</text>
-    </svg>
-  </div>
-
   <!-- メインコンテンツ -->
   <div class="loading-content">
     <!-- 魔法陣ローディングリング -->
@@ -107,25 +88,6 @@ const stars = Array.from({ length: 90 }, () => ({
     </div>
   </div>
 
-  <!-- 流れ星 -->
-  <div class="marisa-fly" aria-hidden="true">
-    <svg viewBox="0 0 90 36" width="80" fill="none">
-      <path d="M90 18 Q60 14 0 18" stroke="url(#tail-l)" stroke-width="2" stroke-linecap="round"/>
-      <defs>
-        <linearGradient id="tail-l" x1="90" y1="0" x2="0" y2="0">
-          <stop offset="0%" stop-color="rgba(201,168,76,0.8)"/>
-          <stop offset="100%" stop-color="transparent"/>
-        </linearGradient>
-      </defs>
-      <line x1="78" y1="8" x2="58" y2="26" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/>
-      <line x1="53" y1="24" x2="58" y2="32" stroke="#c9a84c" stroke-width="1.5" stroke-linecap="round"/>
-      <line x1="56" y1="25" x2="60" y2="33" stroke="#c9a84c" stroke-width="1.5" stroke-linecap="round"/>
-      <line x1="59" y1="26" x2="62" y2="33" stroke="#c9a84c" stroke-width="1.5" stroke-linecap="round"/>
-      <path d="M76 6 L68 14 L84 14 Z" fill="#c9a84c" opacity="0.8"/>
-      <ellipse cx="76" cy="14.5" rx="9" ry="2.5" fill="#c9a84c" opacity="0.8"/>
-      <text x="35" y="14" font-size="7" fill="#f0d870" opacity="0.7">★</text>
-    </svg>
-  </div>
 
 </main>
 </Layout>

@@ -36,21 +36,30 @@ export const collections = {
 };
 ```
 
-### コンテンツの取得（`src/pages/result.astro` 内）
+### 実装済みの取得方式（`src/pages/result.astro`）
+
+`getEntry()` ではなく `getCollection()` でビルド時に全エントリを一括取得し、
+`define:vars` でクライアントスクリプトに渡す方式を採用済み:
 
 ```ts
-import { getEntry } from "astro:content";
-
-// getSunSign() で得た ZodiacSign を使って取得
-const sunEntry  = await getEntry("sun-signs",  sunSign);
-const moonEntry = moonSign ? await getEntry("moon-signs",  moonSign) : null;
-const ascEntry  = ascSign  ? await getEntry("ascendants",  ascSign)  : null;
-
-const { Content: SunContent }  = await sunEntry.render();
-const { Content: MoonContent } = moonEntry ? await moonEntry.render() : { Content: null };
+// ビルド時（サーバーサイド）: 全エントリを一括取得
+const sunEntries = await getCollection("sun-signs");
+const sunData = Object.fromEntries(
+  sunEntries.map((e) => [e.id, { label: e.data.label, body: e.body }])
+);
 ```
 
-> **注意**: `src/lib/content.ts` の `getReading()` placeholder は、最終的にこのContent Collections方式に置き換える。`src/lib/` 内には置かず、ページ層（`src/pages/`）で直接 `getEntry()` を呼ぶ。
+```html
+<!-- クライアントに注入 -->
+<script define:vars={{ sunData, moonData, ascData }}>
+  window.__fp_sun = sunData;
+  // JS側でsign keyを使って参照: window.__fp_sun[sunSign]
+</script>
+```
+
+> `src/lib/content.ts` の `getReading()` placeholder は現状使用していない（result.astroが直接getCollectionを呼ぶ）。将来的に削除可能。
+
+> **注意**: `src/content/config.ts` は実装済み。コレクション定義（signSchema）が完成している。
 
 ---
 

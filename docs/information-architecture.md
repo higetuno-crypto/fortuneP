@@ -60,17 +60,23 @@
 
 ```
 src/pages/
-  index.astro        → /
-  input.astro        → /input
-  loading.astro      → /loading
-  result.astro       → /result
-  404.astro          → /404（任意）
+  index.astro        → /          ✅ 実装済み
+  input.astro        → /input     ✅ 実装済み（4ステップウィザード）
+  loading.astro      → /loading   ✅ 実装済み（3.2秒後に自動遷移）
+  result.astro       → /result    ✅ UIのみ実装済み（コンテンツ.md未着手）
+  404.astro          → /404（未作成）
 ```
 
-### ページ間データの受け渡し方針（要技術選定）
+### ページ間データの受け渡し（確定）
 
-- URLクエリパラメータ: `/result?year=2000&month=3&day=15&hour=10&minute=30`
-- または `sessionStorage` / フレームワークのstate
+**URLクエリパラメータ方式**を採用済み:
+```
+/loading?year=2000&month=3&day=15
+/result?year=2000&month=3&day=15&hour=10&minute=30
+```
+
+内部リンクは必ず `${import.meta.env.BASE_URL}/page` 形式（スラッシュ必須）。
+`base: "/fortuneP"` のため `BASE_URL = "/fortuneP"` (末尾スラッシュなし)。
 
 ---
 

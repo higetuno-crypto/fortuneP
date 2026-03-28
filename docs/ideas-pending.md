@@ -4,42 +4,44 @@
 
 ---
 
-## 魔理沙モチーフの装飾（★★★ 高評価・保留）
+## ✅ 完了済み
+
+### ブレイジングスター（恋符「ブレイジングスター」）
+シアンのコメット頭部 + 散乱する青白い発光球の流れ星アニメーション。
+`index.astro` / `loading.astro` に実装済み。
+詳細: `docs/references/marisa-04-blazing-star.md`
+
+---
+
+## 保留: 魔理沙モチーフの装飾（アセット待ち）
 
 ### 概要
-霧雨魔理沙のキャラクター性（魔女の帽子・箒・星屑・金の輝き）をサイト全体の装飾モチーフとして散りばめる。
+霧雨魔理沙のキャラクター性（魔女の帽子・箒）をサイト全体の装飾モチーフとして散りばめる。
 
-### 元々やりたかったこと
-- **魔女の帽子シルエット**：画面の端に薄く配置（opacity 8〜15%）
-- **箒シルエット**：斜めに配置、まるで魔理沙が飛び去った後のように
-- **流れ星アニメーション**：箒+帽子のシルエット＋金のコメット尾が画面を横切る（18秒周期）
-- **魔法陣中央の箒**：ホロスコープの魔法陣中心に小さな箒シルエット
+### 試みた結果
+ライン系SVGで描いたが、スマホの小画面・薄いopacityでは何の形か判別できず削除。
+「かなり分かりにくい」——SVG線画では識別不能なため、**高品質なイラスト画像が前提**。
 
-### SVGアプローチを試みた結果
-ライン系SVGで描いたが、スマホの小画面・薄い opacity では何の形か判別できず。
-「かなり分かりにくい」との評価で削除。
-
-### 将来の実装方針
-**高品質なイラスト画像（PNG/WebP/SVG）** を用意すれば実現可能。
-
-具体的に必要なアセット：
+### 実装するために必要なアセット
 
 | アセット | 用途 | 推奨サイズ | 透明度 |
 |---|---|---|---|
 | 魔女の帽子（正面/斜め）| 画面端の装飾 | 100〜150px幅 | 10〜20% |
 | 箒（縦/斜め）| 画面端・コーナー装飾 | 50〜80px幅 | 10〜15% |
 | 箒+帽子の飛翔シルエット | 流れ星アニメーション | 120〜160px幅 | 50〜70% |
-| 星屑パーティクル | 飛翔の軌跡 | 数px〜20px | 30〜80% |
 
-### 実装ヒント（将来向け）
+### 実装ヒント（アセット入手後）
+
+```html
+<!-- index.astro — 画像ありの流れ星 -->
+<div class="marisa-fly">
+  <img src="/images/marisa-fly.png" width="160" alt="" aria-hidden="true" />
+</div>
+```
 
 ```css
-/* 流れ星アニメーション（魔理沙が箒で駆ける） */
 .marisa-fly {
-  position: absolute;
-  top: 28%;
-  right: -200px;
-  opacity: 0;
+  position: absolute; top: 28%; right: -200px; opacity: 0;
   animation: marisa-across 18s ease-in-out infinite;
 }
 @keyframes marisa-across {
@@ -50,26 +52,35 @@
 }
 ```
 
-```html
-<!-- 配置例（index.astro） -->
-<div class="marisa-fly">
-  <img src="/images/marisa-fly.png" width="160" alt="" aria-hidden="true" />
-</div>
-<!-- 2回目は別タイミング・上下反転 -->
-<div class="marisa-fly" style="animation-delay:14s; top:62%; transform:scaleY(-1) rotate(3deg)">
-  <img src="/images/marisa-fly.png" width="140" alt="" aria-hidden="true" />
-</div>
+---
+
+## 保留: ホタル浮遊パーティクル
+
+小さな琥珀色の光球がゆっくり上昇するアニメーション。
+「魔法の森」参考画像から着想。冷たい星空に温かみを加える。
+
+実装難度: 低（CSS数行）。
+詳細: `docs/references/magical-forest-01.md`
+
+```css
+.firefly {
+  width: 3px; height: 3px; border-radius: 50%;
+  background: #ffc040;
+  box-shadow: 0 0 4px 2px rgba(255,180,40,0.8), 0 0 10px 4px rgba(255,150,20,0.3);
+  animation: ff-float var(--dur) ease-in-out infinite;
+}
+@keyframes ff-float {
+  0%   { transform: translateY(0) translateX(0); opacity: 0; }
+  20%  { opacity: 0.9; }
+  50%  { transform: translateY(-40px) translateX(8px); opacity: 0.6; }
+  100% { transform: translateY(-90px) translateX(-5px); opacity: 0; }
+}
 ```
-
-### 参考：このサイトの世界観との接続
-> 「このサイトの可愛い、煌めき、燃え尽きるロマン。っていうのは殆ど霧雨魔理沙のキャラクター性に影響されている」（ユーザーコメント）
-
-魔理沙の「ひとりで夜空を駆ける孤独と自由」「ゴールドの輝き」「魔法陣と星の知識」は、
-このサイトの占星術体験と本質的に一致している。
-イラストが揃えば、サイト体験の核心要素になれる。
 
 ---
 
-## その他の保留アイデア
+## 保留: ページ遷移「星空飛び込み」
 
-*(将来追加予定)*
+トップ→入力ページへの遷移時に、星空に飛び込むようなZ軸前進アニメーション。
+CSS `scale` + `opacity` で「前に進む」感を演出。
+実装難度: 中（View Transitions API または手動CSS）。

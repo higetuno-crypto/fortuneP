@@ -1,5 +1,9 @@
 # 霧雨魔理沙 参考画像④ — ブレイジングスター
 
+> **実装状況: ✅ 完了** — `index.astro` / `loading.astro` にCSSで実装済み
+> - index: delay 6s / 22s周期
+> - loading: delay 0.5s / 12s周期（ロード中に通過する）
+
 画像: `marisa-reference-04-blazing-star.jpg`（minusT 3DCG）
 スペルカード: 恋符「ブレイジングスター」(Love Sign "Blazing Star")
 キーワード: 流星、先端に魔理沙、箒の後ろから星の魔法が飛ぶ、まさに流星になる魔法

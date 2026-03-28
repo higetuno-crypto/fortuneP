@@ -85,14 +85,16 @@ fortuneP のデザイン方針を固めるための参考サイト・参考画�
 没入感 = 星の密度 × 輝きの質 × 動きのなめらかさ × 軽さ
 ```
 
-| 要素 | 現状の fortuneP | 目標 |
+| 要素 | fortuneP 現在 | 状態 |
 |---|---|---|
-| 星の密度 | index:140個、result:70個 | ✓ 現状でも十分 |
-| 輝きの質 | 白い点 + glow | ★ bloom感を強化したい |
-| 星の種類 | 均一な点 | ★ 大・中・小 + 色温度の違い（白/青白/淡金）を混ぜる |
-| 流れ星 | 削除済み | ★ 純粋な「光の尾だけの流れ星」を復活させる |
-| 重さ | CSS animation = 軽量 | ✓ WebGL不要、現状維持 |
-| 遷移演出 | なし | ★ ページ遷移時に「星空に飛び込む」演出 |
+| 星の密度 | index:380個、result:110個 | ✅ 実装済み |
+| 輝きの質 | 4段階（micro/small/bright/spike）+ 十字フレア | ✅ 実装済み |
+| 星の種類 | 白 `#ffffff` + 青白 `#d0e4ff`/`#c8dcff` 混合 | ✅ 実装済み |
+| 流れ星 | ブレイジングスター（シアンコメット+軌跡球） | ✅ 実装済み |
+| 重さ | CSS animation = 軽量 | ✅ WebGL不要 |
+| 背景 | radial-gradient ドーム（プラネタリウム没入感） | ✅ 実装済み |
+| 星空ドリフト | 90s scale 1.018 — 漂う感覚 | ✅ 実装済み（index/result） |
+| 遷移演出 | なし | ❌ 未着手（LOW優先） |
 
 ### fortuneP 独自の方向性
 
@@ -100,45 +102,21 @@ fortuneP のデザイン方針を固めるための参考サイト・参考画�
 - 弾幕 = 密度・輝き・動きの組み合わせ
 - 占星術 = 神秘・余韻・静けさ
 - → **動と静のコントラスト**: 流れ星が走る一瞬の動 + 星空の静 = 余韻のある没入
+- → **「星空の海に浮かぶ」**: プラネタリウムドーム感覚 — linear→radial bg で実現済み
 
 ---
 
-## 実装優先度（next action候補）
+## 次のアクション候補
 
-### HIGH: 流れ星の復活（純粋な光の尾）
-魔理沙モチーフを除いた、単純な「光の尾だけの流れ星」を復活させる。
-
-```css
-/* シンプルな流れ星 */
-.shooting-star {
-  position: absolute;
-  width: 120px; height: 1px;
-  background: linear-gradient(to left, rgba(255,255,255,0.8), transparent);
-  border-radius: 1px;
-  animation: shoot 12s ease-in-out infinite;
-}
-@keyframes shoot {
-  0%   { right: -130px; top: 20%; opacity: 0; }
-  3%   { opacity: 0.7; }
-  95%  { opacity: 0.5; }
-  100% { right: 110%; top: 35%; opacity: 0; }
-}
-```
-
-### MEDIUM: 星の色温度バリエーション
-白一色ではなく、青白・白・淡金を混ぜる。
-
-```ts
-// ビルド時の星生成
-const colors = ['#ffffff', '#e8f0ff', '#fff3d4', '#cce0ff'];
-// ランダムにcolor割り当て
-```
-
-### MEDIUM: bloom / glow 強化
-現状の `box-shadow` を大きく取る。輝きの強い星を数個配置。
+### ✅ HIGH（完了）: ブレイジングスター
+シアンのコメット頭部 + 散乱する青白い発光球。`index.astro` / `loading.astro` 実装済み。
+将来: three.js導入後にCanvasベースに置き換え予定。
 
 ### LOW: ページ遷移「星空飛び込み」
-CSS `scale` + `opacity` で「前に進む」感を演出。
+CSS `scale` + `opacity` で「前に進む」感を演出。View Transitions API または手動CSS。
+
+### 将来（three.js）: 3D星空・ブレイジングスター強化
+`docs/references/threejs-webgl-starfield-context.yaml` 参照。
 
 ---
 

@@ -23,6 +23,8 @@ const spikeStars = [
   { x: rnd(20, 40), y: rnd(10, 25) },
   { x: rnd(65, 85), y: rnd(65, 85) },
 ];
+
+const blazingY = rnd(12, 32);
 ---
 
 <Layout title="星を読んでいます">
@@ -45,6 +47,22 @@ const spikeStars = [
     {spikeStars.map(s => (
       <div class="star-spike" style={`left:${s.x}%;top:${s.y}%`}></div>
     ))}
+  </div>
+
+  <!-- ブレイジングスター -->
+  <div class="layer-shooting" aria-hidden="true">
+    <div class="blazing-star" style={`top:${blazingY.toFixed(1)}%`}>
+      <div class="blazing-head"></div>
+      <div class="trail-orb large"  style="left:22px;top:calc(50% + 2px)"></div>
+      <div class="trail-orb large"  style="left:38px;top:calc(50% - 4px)"></div>
+      <div class="trail-orb large"  style="left:55px;top:calc(50% + 5px)"></div>
+      <div class="trail-orb mid"    style="left:76px;top:calc(50% - 3px)"></div>
+      <div class="trail-orb mid"    style="left:99px;top:calc(50% + 7px)"></div>
+      <div class="trail-orb mid"    style="left:124px;top:calc(50% - 5px)"></div>
+      <div class="trail-orb small"  style="left:155px;top:calc(50% + 9px)"></div>
+      <div class="trail-orb small"  style="left:190px;top:calc(50% - 7px)"></div>
+      <div class="trail-orb small"  style="left:228px;top:calc(50% + 4px)"></div>
+    </div>
   </div>
 
   <!-- ボケ玉 -->
@@ -321,21 +339,62 @@ const spikeStars = [
   50%      { opacity: 1; transform: scale(1); }
 }
 
-/* 流れ星 */
-.marisa-fly {
-  position: absolute;
-  top: 20%;
-  right: -100px;
-  opacity: 0;
+/* ブレイジングスター */
+.layer-shooting {
+  position: absolute; inset: 0;
   pointer-events: none;
-  z-index: 4;
-  animation: marisa-across 14s ease-in-out infinite;
-  animation-delay: 2s;
+  z-index: 3;
+  overflow: hidden;
 }
-@keyframes marisa-across {
-  0%   { right: -100px; opacity: 0; }
-  5%   { opacity: 0.5; }
-  90%  { opacity: 0.4; }
-  100% { right: 110%; opacity: 0; }
+.blazing-star {
+  position: absolute;
+  left: 0;
+  width: 280px; height: 40px;
+  animation: blazing-fly 12s linear infinite;
+  animation-delay: 0.5s;
+  animation-fill-mode: backwards;
+}
+.blazing-head {
+  position: absolute;
+  left: 0; top: 50%;
+  transform: translateY(-50%);
+  width: 56px; height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 25% 50%,
+    #ffffff 0%, #b0ffff 25%, #00ddee 55%, transparent 100%);
+  filter: blur(2px);
+  box-shadow:
+    0 0 8px 4px rgba(0, 220, 255, 0.9),
+    0 0 20px 10px rgba(0, 180, 220, 0.5),
+    0 0 40px 20px rgba(0, 140, 200, 0.2);
+}
+.trail-orb {
+  position: absolute;
+  border-radius: 50%;
+  background: #ffffff;
+  transform: translateY(-50%);
+}
+.trail-orb.large {
+  width: 11px; height: 11px;
+  box-shadow:
+    0 0 4px 2px rgba(160, 232, 255, 0.9),
+    0 0 12px 5px rgba(0, 180, 255, 0.4);
+}
+.trail-orb.mid {
+  width: 7px; height: 7px;
+  box-shadow:
+    0 0 3px 1px rgba(160, 232, 255, 0.8),
+    0 0 8px 3px rgba(0, 180, 255, 0.3);
+}
+.trail-orb.small {
+  width: 4px; height: 4px;
+  box-shadow:
+    0 0 2px 1px rgba(160, 232, 255, 0.6);
+}
+@keyframes blazing-fly {
+  0%   { transform: translateX(calc(100vw + 300px)); opacity: 0; }
+  5%   { opacity: 1; }
+  90%  { opacity: 0.85; }
+  100% { transform: translateX(-300px); opacity: 0; }
 }
 </style>

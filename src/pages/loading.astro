@@ -1,91 +1,133 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import "../styles/global.css";
+
+function rnd(a: number, b: number) { return a + Math.random() * (b - a); }
+
+const stars = Array.from({ length: 90 }, () => ({
+  x: rnd(0, 100), y: rnd(0, 100),
+  s: Math.random() < 0.75 ? 1 : 1.5,
+  op: rnd(0.2, 0.8),
+  dur: rnd(2.5, 6),
+  del: rnd(0, 5),
+}));
 ---
 
 <Layout title="星を読んでいます">
-  <main
-    class="starfield relative flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-fp-dark via-fp-navy to-fp-purple/20 px-6"
-  >
-    <!-- 背景グロー -->
-    <div
-      class="pointer-events-none absolute inset-0 flex items-center justify-center"
-    >
-      <div
-        class="h-[320px] w-[320px] rounded-full bg-fp-glow/10 blur-[100px]"
-      >
+<main class="fp-loading-main">
+
+  <!-- 背景 -->
+  <div class="bg-space"></div>
+
+  <!-- 星空 -->
+  <div class="layer-stars" aria-hidden="true">
+    {stars.map(s => (
+      <div class="star-tiny"
+        style={`left:${s.x}%;top:${s.y}%;width:${s.s}px;height:${s.s}px;opacity:${s.op};animation-duration:${s.dur}s;animation-delay:${s.del}s`}></div>
+    ))}
+  </div>
+
+  <!-- ボケ玉 -->
+  <div class="layer-bokeh" aria-hidden="true">
+    <div class="bokeh" style="width:60px;height:60px;top:2%;left:10%;animation-delay:0s"></div>
+    <div class="bokeh" style="width:40px;height:40px;top:1%;right:15%;animation-delay:1.2s"></div>
+    <div class="bokeh" style="width:50px;height:50px;bottom:8%;left:20%;animation-delay:0.7s"></div>
+    <div class="bokeh" style="width:35px;height:35px;bottom:5%;right:10%;animation-delay:1.9s"></div>
+  </div>
+
+  <!-- 魔女の帽子 (左) -->
+  <div class="motif" style="left:2%;top:30%;transform:rotate(-12deg) scale(0.5);opacity:0.1" aria-hidden="true">
+    <svg viewBox="0 0 60 70" width="60" fill="none">
+      <path d="M30 5 L7 55 L53 55 Z" stroke="#c9a84c" stroke-width="1.5" stroke-linejoin="round"/>
+      <ellipse cx="30" cy="57" rx="25" ry="7.5" stroke="#c9a84c" stroke-width="1.5"/>
+      <path d="M13 51 Q30 44 47 51" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/>
+      <text x="25" y="28" font-size="10" fill="#c9a84c">★</text>
+    </svg>
+  </div>
+  <!-- 魔女の帽子 (右) -->
+  <div class="motif" style="right:2%;top:15%;transform:rotate(10deg) scale(0.6);opacity:0.09" aria-hidden="true">
+    <svg viewBox="0 0 60 70" width="60" fill="none">
+      <path d="M30 5 L7 55 L53 55 Z" stroke="#c9a84c" stroke-width="1.5" stroke-linejoin="round"/>
+      <ellipse cx="30" cy="57" rx="25" ry="7.5" stroke="#c9a84c" stroke-width="1.5"/>
+      <path d="M13 51 Q30 44 47 51" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/>
+      <text x="25" y="28" font-size="10" fill="#c9a84c">★</text>
+    </svg>
+  </div>
+
+  <!-- メインコンテンツ -->
+  <div class="loading-content">
+    <!-- 魔法陣ローディングリング -->
+    <div class="magic-loader">
+      <!-- 外周 -->
+      <div class="ml-ring" style="width:160px;height:160px;animation-duration:12s;border-color:rgba(201,168,76,0.15)">
+        <!-- 12星座の点 -->
+        {Array.from({ length: 12 }, (_, i) => (
+          <div class="ml-dot" style={`transform:rotate(${i*30}deg) translateY(-79px) rotate(-${i*30}deg)`}></div>
+        ))}
+      </div>
+      <!-- 中間リング -->
+      <div class="ml-ring" style="width:120px;height:120px;animation-duration:7s;animation-direction:reverse;border-color:rgba(139,167,217,0.2)">
+        <div class="ml-orb-dot" style="background:rgba(139,167,217,0.9);box-shadow:0 0 6px rgba(139,167,217,0.7)"></div>
+      </div>
+      <!-- 内側リング -->
+      <div class="ml-ring" style="width:82px;height:82px;animation-duration:4.5s;border-color:rgba(201,168,76,0.25)">
+        <div class="ml-orb-dot" style="background:rgba(201,168,76,0.9);box-shadow:0 0 8px rgba(201,168,76,0.7)"></div>
+      </div>
+
+      <!-- 魔法陣線 -->
+      <div class="mc-line h"></div>
+      <div class="mc-line v"></div>
+      <div class="mc-line d1"></div>
+      <div class="mc-line d2"></div>
+
+      <!-- 中心: 箒シルエット -->
+      <div class="ml-center">
+        <svg viewBox="0 0 24 50" width="20" fill="none">
+          <line x1="18" y1="3" x2="6" y2="38" stroke="rgba(201,168,76,0.6)" stroke-width="2" stroke-linecap="round"/>
+          <line x1="2" y1="36" x2="7" y2="46" stroke="rgba(201,168,76,0.5)" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="5" y1="37" x2="10" y2="48" stroke="rgba(201,168,76,0.5)" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="8" y1="38" x2="13" y2="48" stroke="rgba(201,168,76,0.5)" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="11" y1="37" x2="15" y2="47" stroke="rgba(201,168,76,0.5)" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+        <span class="ml-star">✦</span>
       </div>
     </div>
 
-    <!-- 星のアニメーション -->
-    <div class="relative z-10 flex flex-col items-center gap-10">
-      <div class="relative h-28 w-28">
-        <!-- 外周リング -->
-        <div
-          class="absolute inset-0 rounded-full border border-fp-glow/20 animate-[spin_8s_linear_infinite]"
-        >
-        </div>
-        <div
-          class="absolute inset-2 rounded-full border border-fp-gold/15 animate-[spin_5s_linear_infinite_reverse]"
-        >
-        </div>
-        <!-- 中心の星 -->
-        <div class="absolute inset-0 flex items-center justify-center">
-          <span
-            class="text-4xl text-fp-gold/80 animate-[pulse_3s_ease-in-out_infinite]"
-          >
-            ✦
-          </span>
-        </div>
-        <!-- 軌道上の点 -->
-        <div
-          class="absolute inset-0 animate-[spin_4s_linear_infinite]"
-        >
-          <div
-            class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 h-1.5 w-1.5 rounded-full bg-fp-glow"
-          >
-          </div>
-        </div>
-        <div
-          class="absolute inset-3 animate-[spin_6s_linear_infinite_reverse]"
-        >
-          <div
-            class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 h-1 w-1 rounded-full bg-fp-gold/80"
-          >
-          </div>
-        </div>
-      </div>
-
-      <!-- テキスト -->
-      <div class="text-center space-y-3">
-        <p class="font-serif text-lg font-light text-fp-pearl/90 tracking-wide">
-          星を読んでいます
-        </p>
-        <p
-          id="loading-text"
-          class="text-xs text-fp-pearl/40 transition-opacity duration-700"
-        >
-          太陽の位置を確認しています
-        </p>
-      </div>
-
-      <!-- ドットインジケーター -->
-      <div class="flex gap-2">
-        <div
-          class="h-1 w-1 rounded-full bg-fp-glow animate-[pulse_1.5s_ease-in-out_infinite]"
-        >
-        </div>
-        <div
-          class="h-1 w-1 rounded-full bg-fp-glow animate-[pulse_1.5s_ease-in-out_0.5s_infinite]"
-        >
-        </div>
-        <div
-          class="h-1 w-1 rounded-full bg-fp-glow animate-[pulse_1.5s_ease-in-out_1s_infinite]"
-        >
-        </div>
-      </div>
+    <!-- テキスト -->
+    <div class="loading-text-area">
+      <p class="loading-title">星を読んでいます</p>
+      <p id="loading-text" class="loading-sub">太陽の位置を確認しています</p>
     </div>
-  </main>
+
+    <!-- ドットインジケーター -->
+    <div class="loading-dots">
+      <div class="dot" style="animation-delay:0s"></div>
+      <div class="dot" style="animation-delay:0.4s"></div>
+      <div class="dot" style="animation-delay:0.8s"></div>
+    </div>
+  </div>
+
+  <!-- 流れ星 -->
+  <div class="marisa-fly" aria-hidden="true">
+    <svg viewBox="0 0 90 36" width="80" fill="none">
+      <path d="M90 18 Q60 14 0 18" stroke="url(#tail-l)" stroke-width="2" stroke-linecap="round"/>
+      <defs>
+        <linearGradient id="tail-l" x1="90" y1="0" x2="0" y2="0">
+          <stop offset="0%" stop-color="rgba(201,168,76,0.8)"/>
+          <stop offset="100%" stop-color="transparent"/>
+        </linearGradient>
+      </defs>
+      <line x1="78" y1="8" x2="58" y2="26" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/>
+      <line x1="53" y1="24" x2="58" y2="32" stroke="#c9a84c" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="56" y1="25" x2="60" y2="33" stroke="#c9a84c" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="59" y1="26" x2="62" y2="33" stroke="#c9a84c" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M76 6 L68 14 L84 14 Z" fill="#c9a84c" opacity="0.8"/>
+      <ellipse cx="76" cy="14.5" rx="9" ry="2.5" fill="#c9a84c" opacity="0.8"/>
+      <text x="35" y="14" font-size="7" fill="#f0d870" opacity="0.7">★</text>
+    </svg>
+  </div>
+
+</main>
 </Layout>
 
 <script>
@@ -94,6 +136,7 @@ import "../styles/global.css";
     "月の軌道を辿っています",
     "星の言葉に耳を澄ませています",
     "あなたの星座を読んでいます",
+    "運命の糸を手繰り寄せています",
   ];
 
   const textEl = document.getElementById("loading-text")!;
@@ -106,11 +149,172 @@ import "../styles/global.css";
       textEl.textContent = messages[idx];
       textEl.style.opacity = "1";
     }, 350);
-  }, 1200);
+  }, 1100);
 
-  // クエリパラメータをそのまま /result へ引き継ぐ
   setTimeout(() => {
     clearInterval(interval);
     window.location.href = import.meta.env.BASE_URL + "result" + window.location.search;
-  }, 3000);
+  }, 3200);
 </script>
+
+<style>
+.fp-loading-main {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.bg-space {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, #12082e 0%, #06081a 40%, #050712 100%);
+  z-index: 0;
+}
+
+.layer-stars, .layer-bokeh {
+  position: absolute; inset: 0;
+  pointer-events: none;
+}
+.layer-stars { z-index: 1; }
+.layer-bokeh { z-index: 2; }
+
+.star-tiny {
+  position: absolute;
+  border-radius: 50%;
+  background: white;
+  animation: twinkle ease-in-out infinite;
+}
+@keyframes twinkle {
+  0%, 100% { opacity: var(--op, 0.6); transform: scale(1); }
+  50%       { opacity: calc(var(--op, 0.6) * 0.2); transform: scale(0.6); }
+}
+
+.bokeh {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, rgba(240,210,60,1) 0%, rgba(201,168,76,0.35) 45%, transparent 70%);
+  filter: blur(10px);
+  animation: bk-float 4.5s ease-in-out infinite;
+}
+@keyframes bk-float {
+  0%,100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-8px) scale(1.06); }
+}
+
+.motif { position: absolute; pointer-events: none; z-index: 3; }
+
+/* ローディングコンテンツ */
+.loading-content {
+  position: relative; z-index: 10;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 2rem;
+}
+
+/* 魔法陣ローディングリング */
+.magic-loader {
+  position: relative;
+  width: 160px; height: 160px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.ml-ring {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  border-radius: 50%;
+  border: 1px solid;
+  animation: ring-spin linear infinite;
+}
+.ml-dot {
+  position: absolute; top: 50%; left: 50%;
+  width: 4px; height: 4px; margin: -2px;
+  border-radius: 50%;
+  background: rgba(201,168,76,0.45);
+}
+.ml-orb-dot {
+  position: absolute;
+  top: -4px; left: calc(50% - 4px);
+  width: 7px; height: 7px;
+  border-radius: 50%;
+}
+@keyframes ring-spin {
+  from { transform: translate(-50%,-50%) rotate(0deg); }
+  to   { transform: translate(-50%,-50%) rotate(360deg); }
+}
+
+/* 魔法陣線 */
+.mc-line {
+  position: absolute; top: 50%; left: 50%;
+  background: rgba(201,168,76,0.05);
+}
+.mc-line.h { width: 160px; height: 1px; transform: translate(-50%,-50%); }
+.mc-line.v { width: 1px; height: 160px; transform: translate(-50%,-50%); }
+.mc-line.d1 { width: 160px; height: 1px; transform: translate(-50%,-50%) rotate(45deg); }
+.mc-line.d2 { width: 160px; height: 1px; transform: translate(-50%,-50%) rotate(-45deg); }
+
+/* 中心 */
+.ml-center {
+  position: absolute;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 2px;
+}
+.ml-star {
+  font-size: 1.4rem;
+  color: rgba(201,168,76,0.6);
+  text-shadow: 0 0 12px rgba(201,168,76,0.5);
+  animation: star-pulse 2.5s ease-in-out infinite;
+}
+@keyframes star-pulse {
+  0%,100% { opacity: 0.6; transform: scale(1); }
+  50%      { opacity: 1; transform: scale(1.12); }
+}
+
+/* テキスト */
+.loading-text-area { text-align: center; space-y: 0.75rem; }
+.loading-title {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 1.1rem; font-weight: 300;
+  color: rgba(232,224,208,0.9);
+  letter-spacing: 0.1em;
+  margin-bottom: 0.5rem;
+}
+.loading-sub {
+  font-size: 0.75rem;
+  color: rgba(232,224,208,0.35);
+  transition: opacity 0.35s;
+  letter-spacing: 0.05em;
+}
+
+/* ドット */
+.loading-dots { display: flex; gap: 8px; }
+.dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: rgba(139,167,217,0.6);
+  animation: dot-pulse 1.5s ease-in-out infinite;
+}
+@keyframes dot-pulse {
+  0%,100% { opacity: 0.2; transform: scale(0.8); }
+  50%      { opacity: 1; transform: scale(1); }
+}
+
+/* 流れ星 */
+.marisa-fly {
+  position: absolute;
+  top: 20%;
+  right: -100px;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 4;
+  animation: marisa-across 14s ease-in-out infinite;
+  animation-delay: 2s;
+}
+@keyframes marisa-across {
+  0%   { right: -100px; opacity: 0; }
+  5%   { opacity: 0.5; }
+  90%  { opacity: 0.4; }
+  100% { right: 110%; opacity: 0; }
+}
+</style>

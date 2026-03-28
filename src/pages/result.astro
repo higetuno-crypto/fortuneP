@@ -19,127 +19,171 @@ const moonData: Record<string, SignData> = Object.fromEntries(
 const ascData: Record<string, SignData> = Object.fromEntries(
   ascEntries.map((e) => [e.id, { label: e.data.label, body: e.body }])
 );
+
+function rnd(a: number, b: number) { return a + Math.random() * (b - a); }
+const stars = Array.from({ length: 70 }, () => ({
+  x: rnd(0, 100), y: rnd(0, 100),
+  s: Math.random() < 0.75 ? 1 : 1.5,
+  op: rnd(0.15, 0.65),
+  dur: rnd(2.5, 6),
+  del: rnd(0, 5),
+}));
 ---
 
 <Layout title="あなたの星読み">
-  <main
-    class="starfield min-h-screen bg-gradient-to-b from-fp-dark via-fp-navy to-fp-dark px-5 py-12"
-  >
+<main class="fp-result-main">
+
+  <!-- 背景 -->
+  <div class="bg-space"></div>
+
+  <!-- 星空 -->
+  <div class="layer-stars" aria-hidden="true">
+    {stars.map(s => (
+      <div class="star-tiny"
+        style={`left:${s.x}%;top:${s.y}%;width:${s.s}px;height:${s.s}px;opacity:${s.op};animation-duration:${s.dur}s;animation-delay:${s.del}s`}></div>
+    ))}
+  </div>
+
+  <!-- ボケ玉 (控えめ) -->
+  <div class="layer-bokeh" aria-hidden="true">
+    <div class="bokeh" style="width:55px;height:55px;top:0%;left:5%;animation-delay:0s;opacity:0.6"></div>
+    <div class="bokeh" style="width:40px;height:40px;top:1%;right:8%;animation-delay:1.5s;opacity:0.5"></div>
+  </div>
+
+  <!-- 魔女の帽子 (右端、非常に薄く) -->
+  <div class="motif" style="right:0%;top:8%;transform:rotate(12deg) scale(0.55);opacity:0.07" aria-hidden="true">
+    <svg viewBox="0 0 60 70" width="60" fill="none">
+      <path d="M30 5 L7 55 L53 55 Z" stroke="#c9a84c" stroke-width="1.5" stroke-linejoin="round"/>
+      <ellipse cx="30" cy="57" rx="25" ry="7.5" stroke="#c9a84c" stroke-width="1.5"/>
+      <path d="M13 51 Q30 44 47 51" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/>
+      <text x="25" y="28" font-size="10" fill="#c9a84c">★</text>
+    </svg>
+  </div>
+  <!-- 箒 (左端) -->
+  <div class="motif" style="left:0%;bottom:25%;transform:rotate(35deg) scale(0.5);opacity:0.08" aria-hidden="true">
+    <svg viewBox="0 0 40 110" width="40" fill="none">
+      <line x1="32" y1="4" x2="9" y2="85" stroke="#c9a84c" stroke-width="2.5" stroke-linecap="round"/>
+      <ellipse cx="11" cy="81" rx="6" ry="3" transform="rotate(-70 11 81)" stroke="#c9a84c" stroke-width="1.5"/>
+      <line x1="1" y1="78" x2="10" y2="96" stroke="#c9a84c" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="5" y1="81" x2="13" y2="100" stroke="#c9a84c" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="10" y1="83" x2="17" y2="102" stroke="#c9a84c" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="14" y1="83" x2="20" y2="100" stroke="#c9a84c" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <!-- ========== コンテンツ ========== -->
+  <div class="result-scroll">
+
     <!-- ローディング中 -->
-    <div
-      id="state-loading"
-      class="flex min-h-screen flex-col items-center justify-center gap-4"
-    >
-      <span class="text-3xl text-fp-gold animate-pulse">✦</span>
-      <p class="text-sm text-fp-pearl/40">読み込んでいます</p>
+    <div id="state-loading" class="state-center">
+      <span class="text-3xl text-fp-gold" style="animation: star-pulse 2s ease-in-out infinite">✦</span>
+      <p class="text-sm text-fp-pearl/40 mt-3">読み込んでいます</p>
     </div>
 
     <!-- エラー -->
-    <div id="state-error" class="hidden flex min-h-screen flex-col items-center justify-center gap-6 text-center">
-      <p class="text-fp-pearl/60">生年月日が見つかりませんでした</p>
+    <div id="state-error" class="hidden state-center">
+      <p class="text-fp-pearl/60 mb-6">生年月日が見つかりませんでした</p>
       <a href={`${import.meta.env.BASE_URL}input`} class="btn-gold text-sm">もう一度入力する</a>
     </div>
 
     <!-- 結果 -->
-    <div id="state-result" class="hidden max-w-lg mx-auto space-y-8">
+    <div id="state-result" class="hidden result-content">
 
       <!-- ヘッダー -->
-      <div class="text-center fade-in">
-        <p class="text-xs tracking-[0.3em] text-fp-gold/60 uppercase mb-4">Your Reading</p>
-        <p id="result-date" class="text-xs text-fp-pearl/40"></p>
+      <div class="result-header fade-in">
+        <p class="result-eyebrow">✦ Your Reading ✦</p>
+        <p id="result-date" class="result-date"></p>
       </div>
 
-      <!-- 3要素サマリーバッジ -->
-      <div id="result-badges" class="glass-card px-5 py-5 fade-in fade-in-delay-1">
-        <p class="text-xs tracking-widest text-fp-pearl/40 mb-4 text-center uppercase">
-          あなたの3つの星
-        </p>
-        <div class="grid grid-cols-3 gap-2 text-center">
-          <div>
-            <p class="text-lg text-fp-gold" id="badge-sun-symbol"></p>
-            <p class="text-[10px] text-fp-pearl/50 mt-0.5">太陽</p>
-            <p class="text-xs text-fp-pearl mt-1" id="badge-sun-label"></p>
+      <!-- 3要素バッジ -->
+      <div id="result-badges" class="badges-card glass-card fade-in fade-in-delay-1">
+        <p class="badges-title">あなたの3つの星</p>
+        <div class="badges-grid">
+          <div class="badge-item">
+            <p class="badge-symbol badge-sun" id="badge-sun-symbol"></p>
+            <p class="badge-type">太陽</p>
+            <p class="badge-label" id="badge-sun-label"></p>
           </div>
-          <div>
-            <p class="text-lg text-fp-glow" id="badge-moon-symbol"></p>
-            <p class="text-[10px] text-fp-pearl/50 mt-0.5">月</p>
-            <p class="text-xs text-fp-pearl mt-1" id="badge-moon-label"></p>
+          <div class="badge-item">
+            <p class="badge-symbol badge-moon" id="badge-moon-symbol"></p>
+            <p class="badge-type">月</p>
+            <p class="badge-label" id="badge-moon-label"></p>
           </div>
-          <div>
-            <p class="text-lg text-fp-pearl/60" id="badge-asc-symbol"></p>
-            <p class="text-[10px] text-fp-pearl/50 mt-0.5">ASC</p>
-            <p class="text-xs text-fp-pearl mt-1" id="badge-asc-label"></p>
+          <div class="badge-item">
+            <p class="badge-symbol badge-asc" id="badge-asc-symbol"></p>
+            <p class="badge-type">ASC</p>
+            <p class="badge-label" id="badge-asc-label"></p>
           </div>
         </div>
       </div>
 
-      <!-- 太陽星座セクション -->
-      <section class="glass-card px-5 py-6 fade-in fade-in-delay-2 space-y-4">
-        <div class="flex items-center gap-3">
-          <span class="text-2xl text-fp-gold">☀</span>
+      <!-- 太陽星座 -->
+      <section class="reading-card glass-card fade-in fade-in-delay-2">
+        <div class="reading-header">
+          <span class="reading-icon sun-icon">☀</span>
           <div>
-            <p class="text-[10px] tracking-widest text-fp-gold/60 uppercase">Sun Sign · 表の核</p>
-            <h2 id="sun-label" class="text-lg font-serif font-light text-fp-pearl mt-0.5"></h2>
+            <p class="reading-type">Sun Sign · 表の核</p>
+            <h2 class="reading-sign-label" id="sun-label"></h2>
           </div>
         </div>
-        <div id="sun-body" class="text-sm leading-[1.9] text-fp-pearl/80 whitespace-pre-wrap"></div>
+        <div id="sun-body" class="reading-body"></div>
       </section>
 
-      <!-- 月星座セクション -->
-      <section id="section-moon" class="glass-card px-5 py-6 fade-in fade-in-delay-3 space-y-4">
-        <div class="flex items-center gap-3">
-          <span class="text-2xl text-fp-glow">☽</span>
+      <!-- 月星座 -->
+      <section id="section-moon" class="reading-card glass-card fade-in fade-in-delay-3">
+        <div class="reading-header">
+          <span class="reading-icon moon-icon">☽</span>
           <div>
-            <p class="text-[10px] tracking-widest text-fp-glow/60 uppercase">Moon Sign · 心の奥</p>
-            <h2 id="moon-label" class="text-lg font-serif font-light text-fp-pearl mt-0.5"></h2>
+            <p class="reading-type moon-type">Moon Sign · 心の奥</p>
+            <h2 class="reading-sign-label" id="moon-label"></h2>
           </div>
         </div>
-        <div id="moon-body" class="text-sm leading-[1.9] text-fp-pearl/80 whitespace-pre-wrap"></div>
-        <p id="moon-note" class="hidden text-[11px] text-fp-glow/50 border-t border-white/5 pt-3">
+        <div id="moon-body" class="reading-body"></div>
+        <p id="moon-note" class="hidden reading-note">
           ※ 出生時間が分かるとより正確に読めます
         </p>
       </section>
 
-      <!-- アセンダントセクション -->
-      <section id="section-asc" class="glass-card px-5 py-6 fade-in fade-in-delay-4 space-y-4">
-        <div class="flex items-center gap-3">
-          <span class="text-2xl text-fp-pearl/60">↑</span>
+      <!-- アセンダント -->
+      <section id="section-asc" class="reading-card glass-card fade-in fade-in-delay-4">
+        <div class="reading-header">
+          <span class="reading-icon asc-icon">↑</span>
           <div>
-            <p class="text-[10px] tracking-widest text-fp-pearl/40 uppercase">Ascendant · 外側の入口</p>
-            <h2 id="asc-label" class="text-lg font-serif font-light text-fp-pearl mt-0.5"></h2>
+            <p class="reading-type asc-type">Ascendant · 外側の入口</p>
+            <h2 class="reading-sign-label" id="asc-label"></h2>
           </div>
         </div>
-        <div id="asc-body" class="text-sm leading-[1.9] text-fp-pearl/80 whitespace-pre-wrap"></div>
+        <div id="asc-body" class="reading-body"></div>
       </section>
 
-      <!-- ASC なし案内 -->
-      <div id="section-asc-missing" class="hidden glass-card px-5 py-5 text-center space-y-2">
-        <span class="text-xl text-fp-pearl/30">↑</span>
-        <p class="text-sm text-fp-pearl/50">アセンダント · 外側の入口</p>
-        <p class="text-xs text-fp-pearl/30 leading-relaxed">
-          出生時間が分かると、<br />アセンダントも読めます
-        </p>
-        <a href={`${import.meta.env.BASE_URL}input`} class="inline-block mt-2 text-xs text-fp-glow/60 underline underline-offset-4">
-          もう一度入力する
-        </a>
+      <!-- ASC なし -->
+      <div id="section-asc-missing" class="hidden glass-card asc-missing-card fade-in fade-in-delay-4">
+        <span class="asc-missing-icon">↑</span>
+        <p class="asc-missing-title">アセンダント · 外側の入口</p>
+        <p class="asc-missing-body">出生時間が分かると、<br />アセンダントも読めます</p>
+        <a href={`${import.meta.env.BASE_URL}input`} class="asc-missing-link">もう一度入力する</a>
       </div>
 
       <!-- フッター -->
-      <div class="text-center pt-4 pb-8 space-y-4 fade-in fade-in-delay-4">
-        <a
-          href={`${import.meta.env.BASE_URL}input`}
-          class="inline-flex items-center gap-2 text-xs text-fp-pearl/40 hover:text-fp-pearl/70 transition-colors"
-        >
+      <div class="result-footer fade-in fade-in-delay-4">
+        <!-- 小さな魔法陣 -->
+        <div class="footer-magic" aria-hidden="true">
+          <div class="fm-ring outer"></div>
+          <div class="fm-ring inner"></div>
+          <div class="fm-center">✦</div>
+        </div>
+
+        <a href={`${import.meta.env.BASE_URL}input`} class="footer-back-link">
           ← 別の生年月日で読む
         </a>
-        <div class="pt-2">
-          <a href={import.meta.env.BASE_URL} class="text-xs text-fp-gold/40 hover:text-fp-gold/70 transition-colors">
-            fortuneP
-          </a>
-        </div>
+        <a href={import.meta.env.BASE_URL} class="footer-home-link">
+          fortuneP
+        </a>
       </div>
     </div>
-  </main>
+
+  </div><!-- /result-scroll -->
+</main>
 </Layout>
 
 <!-- ビルド時のコンテンツデータをグローバルに注入 -->
@@ -266,3 +310,237 @@ const ascData: Record<string, SignData> = Object.fromEntries(
 
   render();
 </script>
+
+<style>
+.fp-result-main {
+  position: relative;
+  min-height: 100svh;
+  overflow-x: hidden;
+}
+
+.bg-space {
+  position: fixed; inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, #12082e 0%, #06081a 45%, #050712 100%);
+  z-index: 0;
+}
+
+.layer-stars, .layer-bokeh {
+  position: fixed; inset: 0;
+  pointer-events: none;
+}
+.layer-stars { z-index: 1; }
+.layer-bokeh { z-index: 2; }
+
+.star-tiny {
+  position: absolute;
+  border-radius: 50%;
+  background: white;
+  animation: twinkle ease-in-out infinite;
+}
+@keyframes twinkle {
+  0%, 100% { opacity: var(--op, 0.5); transform: scale(1); }
+  50%       { opacity: calc(var(--op, 0.5) * 0.2); transform: scale(0.6); }
+}
+
+.bokeh {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, rgba(240,210,60,1) 0%, rgba(201,168,76,0.35) 45%, transparent 70%);
+  filter: blur(10px);
+  animation: bk-float 4.5s ease-in-out infinite;
+}
+@keyframes bk-float {
+  0%,100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-8px) scale(1.06); }
+}
+
+.motif {
+  position: fixed;
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* スクロール領域 */
+.result-scroll {
+  position: relative; z-index: 10;
+  padding: 3rem 1.25rem 4rem;
+}
+
+.state-center {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  min-height: 80svh;
+  text-align: center;
+}
+
+/* 結果コンテンツ */
+.result-content {
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex; flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ヘッダー */
+.result-header { text-align: center; }
+.result-eyebrow {
+  font-size: 0.65rem;
+  letter-spacing: 0.35em;
+  color: rgba(201,168,76,0.55);
+  margin-bottom: 0.5rem;
+}
+.result-date {
+  font-size: 0.75rem;
+  color: rgba(232,224,208,0.35);
+}
+
+/* バッジカード */
+.badges-card {
+  padding: 1.25rem 1rem;
+}
+.badges-title {
+  font-size: 0.65rem;
+  letter-spacing: 0.25em;
+  color: rgba(232,224,208,0.35);
+  text-align: center;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+.badges-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  text-align: center;
+}
+.badge-item {}
+.badge-symbol { font-size: 1.4rem; }
+.badge-sun { color: rgba(201,168,76,0.9); }
+.badge-moon { color: rgba(139,167,217,0.9); }
+.badge-asc { color: rgba(232,224,208,0.55); }
+.badge-type { font-size: 0.6rem; color: rgba(232,224,208,0.4); margin-top: 0.15rem; }
+.badge-label { font-size: 0.7rem; color: rgba(232,224,208,0.85); margin-top: 0.25rem; }
+
+/* リーディングカード */
+.reading-card {
+  padding: 1.5rem 1.25rem;
+  display: flex; flex-direction: column; gap: 1rem;
+}
+.reading-header {
+  display: flex; align-items: flex-start; gap: 0.75rem;
+}
+.reading-icon { font-size: 1.5rem; }
+.sun-icon { color: rgba(201,168,76,0.9); }
+.moon-icon { color: rgba(139,167,217,0.85); }
+.asc-icon { color: rgba(232,224,208,0.5); }
+.reading-type {
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(201,168,76,0.55);
+}
+.moon-type { color: rgba(139,167,217,0.55); }
+.asc-type { color: rgba(232,224,208,0.35); }
+.reading-sign-label {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 1.15rem; font-weight: 300;
+  color: rgba(232,224,208,0.95);
+  margin-top: 0.25rem;
+}
+.reading-body {
+  font-size: 0.85rem;
+  line-height: 1.95;
+  color: rgba(232,224,208,0.75);
+  white-space: pre-wrap;
+}
+.reading-note {
+  font-size: 0.68rem;
+  color: rgba(139,167,217,0.5);
+  border-top: 1px solid rgba(255,255,255,0.05);
+  padding-top: 0.75rem;
+}
+
+/* ASC なし */
+.asc-missing-card {
+  padding: 1.5rem 1.25rem;
+  text-align: center;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 0.5rem;
+}
+.asc-missing-icon { font-size: 1.25rem; color: rgba(232,224,208,0.25); }
+.asc-missing-title { font-size: 0.85rem; color: rgba(232,224,208,0.45); }
+.asc-missing-body {
+  font-size: 0.75rem;
+  color: rgba(232,224,208,0.3);
+  line-height: 1.8;
+}
+.asc-missing-link {
+  font-size: 0.7rem;
+  color: rgba(139,167,217,0.55);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  margin-top: 0.5rem;
+}
+
+/* フッター */
+.result-footer {
+  padding-top: 1rem;
+  padding-bottom: 2rem;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 1.25rem;
+  text-align: center;
+}
+
+/* 小魔法陣 */
+.footer-magic {
+  position: relative;
+  width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+}
+.fm-ring {
+  position: absolute; top: 50%; left: 50%;
+  border-radius: 50%;
+  transform: translate(-50%,-50%);
+}
+.fm-ring.outer {
+  width: 44px; height: 44px;
+  border: 1px solid rgba(201,168,76,0.2);
+  animation: ring-spin 10s linear infinite;
+}
+.fm-ring.inner {
+  width: 30px; height: 30px;
+  border: 1px solid rgba(201,168,76,0.12);
+  animation: ring-spin 7s linear infinite reverse;
+}
+.fm-center {
+  position: absolute;
+  font-size: 0.8rem;
+  color: rgba(201,168,76,0.45);
+  text-shadow: 0 0 8px rgba(201,168,76,0.4);
+  animation: star-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes ring-spin {
+  from { transform: translate(-50%,-50%) rotate(0deg); }
+  to   { transform: translate(-50%,-50%) rotate(360deg); }
+}
+@keyframes star-pulse {
+  0%,100% { opacity: 0.45; }
+  50%      { opacity: 0.9; }
+}
+
+.footer-back-link {
+  font-size: 0.75rem;
+  color: rgba(232,224,208,0.35);
+  transition: color 0.2s;
+}
+.footer-back-link:hover { color: rgba(232,224,208,0.7); }
+
+.footer-home-link {
+  font-family: 'Cinzel', serif;
+  font-size: 0.8rem;
+  color: rgba(201,168,76,0.35);
+  letter-spacing: 0.1em;
+  transition: color 0.2s;
+}
+.footer-home-link:hover { color: rgba(201,168,76,0.7); }
+</style>

@@ -1,23 +1,42 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import "../styles/global.css";
+
+function rnd(a: number, b: number) { return a + Math.random() * (b - a); }
+const stars = Array.from({ length: 80 }, () => ({
+  x: rnd(0,100), y: rnd(0,100),
+  s: Math.random() < 0.8 ? 1 : 1.5,
+  op: rnd(0.2, 0.75), dur: rnd(2,5), del: rnd(0,4),
+}));
 ---
 
 <Layout title="生年月日を入力">
-  <main class="relative flex min-h-screen flex-col overflow-hidden bg-fp-navy select-none">
+  <main class="relative flex min-h-screen flex-col overflow-hidden select-none" style="background:radial-gradient(ellipse at 50% 0%, #12082e 0%, #06081a 40%, #050712 100%)">
 
-    <!-- 背景 -->
-    <div class="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#06081a] via-fp-navy to-[#140d35]"></div>
-    <div class="pointer-events-none absolute inset-0 overflow-hidden">
-      <div class="bokeh-orb" style="width:70px;height:70px;top:0%;left:5%;opacity:0.6"></div>
-      <div class="bokeh-orb" style="width:45px;height:45px;top:2%;left:55%;opacity:0.5;animation-delay:1.2s"></div>
-      <div class="bokeh-orb" style="width:60px;height:60px;top:1%;right:8%;opacity:0.65;animation-delay:0.7s"></div>
-      <div class="bokeh-orb" style="width:30px;height:30px;top:6%;left:30%;opacity:0.4;animation-delay:2s"></div>
+    <!-- 星空 -->
+    <div class="pointer-events-none absolute inset-0 z-0">
+      {stars.map(s => (
+        <div style={`position:absolute;left:${s.x}%;top:${s.y}%;width:${s.s}px;height:${s.s}px;border-radius:50%;background:white;opacity:${s.op};animation:twinkle-inp ${s.dur}s ${s.del}s ease-in-out infinite`}></div>
+      ))}
     </div>
-    <div class="pointer-events-none absolute inset-0">
-      <span class="sparkle" style="top:10%;left:15%">✦</span>
-      <span class="sparkle" style="top:14%;left:70%;animation-delay:1.2s">✦</span>
-      <span class="sparkle" style="top:8%;left:45%;animation-delay:0.6s">✦</span>
+
+    <!-- ボケ玉 -->
+    <div class="pointer-events-none absolute inset-0 overflow-hidden z-0">
+      <div class="bokeh" style="width:70px;height:70px;top:0%;left:5%"></div>
+      <div class="bokeh" style="width:45px;height:45px;top:2%;left:55%;animation-delay:1.2s"></div>
+      <div class="bokeh" style="width:60px;height:60px;top:1%;right:8%;animation-delay:0.7s"></div>
+      <div class="bokeh" style="width:30px;height:30px;top:6%;left:30%;animation-delay:2s"></div>
+    </div>
+
+    <!-- 右端の小さい箒モチーフ -->
+    <div class="pointer-events-none absolute z-0" style="right:2%;bottom:30%;opacity:0.07;transform:rotate(-40deg)">
+      <svg viewBox="0 0 30 80" width="30" fill="none">
+        <line x1="24" y1="3" x2="7" y2="62" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/>
+        <line x1="2" y1="58" x2="8" y2="70" stroke="#c9a84c" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="5" y1="60" x2="11" y2="73" stroke="#c9a84c" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="9" y1="61" x2="14" y2="73" stroke="#c9a84c" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="12" y1="60" x2="17" y2="71" stroke="#c9a84c" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
     </div>
 
     <!-- ヘッダー -->
@@ -152,6 +171,13 @@ import "../styles/global.css";
   }
   .sparkle { position: absolute; font-size: 10px; color: rgba(255,255,255,0.7); animation: sparkle-blink 2.5s ease-in-out infinite; }
   @keyframes bokeh-float { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-6px) scale(1.05)} }
+  @keyframes twinkle-inp { 0%,100%{opacity:var(--op,0.5);transform:scale(1)} 50%{opacity:calc(var(--op,0.5)*0.15);transform:scale(0.5)} }
+  .bokeh {
+    position: absolute; border-radius: 50%;
+    background: radial-gradient(circle at 38% 32%, rgba(240,210,60,1) 0%, rgba(201,168,76,0.35) 45%, transparent 70%);
+    filter: blur(10px);
+    animation: bokeh-float 4.5s ease-in-out infinite;
+  }
   @keyframes sparkle-blink { 0%,100%{opacity:0.8;transform:scale(1)} 50%{opacity:0.2;transform:scale(0.7)} }
 
   /* 進捗ドット */

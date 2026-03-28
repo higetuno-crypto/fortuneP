@@ -17,7 +17,7 @@ const currentYear = new Date().getFullYear();
 
     <!-- ヘッダー -->
     <div class="relative z-10 w-full max-w-sm mb-10 fade-in">
-      <a href="/" class="text-fp-pearl/40 text-sm hover:text-fp-pearl/70 transition-colors">
+      <a href={import.meta.env.BASE_URL} class="text-fp-pearl/40 text-sm hover:text-fp-pearl/70 transition-colors">
         ← fortuneP
       </a>
       <h1 class="mt-6 font-serif text-2xl font-light tracking-wide text-fp-pearl heading-glow">
@@ -32,7 +32,7 @@ const currentYear = new Date().getFullYear();
     <!-- フォーム -->
     <form
       method="get"
-      action="/loading"
+      action={`${import.meta.env.BASE_URL}loading`}
       class="relative z-10 w-full max-w-sm space-y-6 fade-in fade-in-delay-1"
       id="birth-form"
     >

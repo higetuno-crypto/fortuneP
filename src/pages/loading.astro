@@ -111,6 +111,6 @@ import "../styles/global.css";
   // クエリパラメータをそのまま /result へ引き継ぐ
   setTimeout(() => {
     clearInterval(interval);
-    window.location.href = "/result" + window.location.search;
+    window.location.href = import.meta.env.BASE_URL + "result" + window.location.search;
   }, 3000);
 </script>

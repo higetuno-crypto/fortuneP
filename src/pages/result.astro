@@ -10,14 +10,16 @@ const ascEntries = await getCollection("ascendants");
 
 type SignData = { label: string; body: string };
 
+const toKey = (id: string) => id.replace(/\.md$/, "");
+
 const sunData: Record<string, SignData> = Object.fromEntries(
-  sunEntries.map((e) => [e.id, { label: e.data.label, body: e.body }])
+  sunEntries.map((e) => [toKey(e.id), { label: e.data.label, body: e.body }])
 );
 const moonData: Record<string, SignData> = Object.fromEntries(
-  moonEntries.map((e) => [e.id, { label: e.data.label, body: e.body }])
+  moonEntries.map((e) => [toKey(e.id), { label: e.data.label, body: e.body }])
 );
 const ascData: Record<string, SignData> = Object.fromEntries(
-  ascEntries.map((e) => [e.id, { label: e.data.label, body: e.body }])
+  ascEntries.map((e) => [toKey(e.id), { label: e.data.label, body: e.body }])
 );
 
 function rnd(a: number, b: number) { return a + Math.random() * (b - a); }
@@ -248,14 +250,24 @@ const spikeStars = [{ x: rnd(70, 90), y: rnd(5, 20) }];
     const hour    = hasTime ? parseInt(hourRaw!) : 12;
     const minute  = minuteRaw ? parseInt(minuteRaw) : 0;
 
-    // 計算
+    // JST → UTC 変換（占星術計算はUTC基準）
+    // ユーザー入力はJST（日本標準時 = UTC+9）前提
+    const JST_OFFSET = 9;
+    const utcDate = new Date(Date.UTC(year, month - 1, day, hour - JST_OFFSET, minute));
+    const utcYear   = utcDate.getUTCFullYear();
+    const utcMonth  = utcDate.getUTCMonth() + 1;
+    const utcDay    = utcDate.getUTCDate();
+    const utcHour   = utcDate.getUTCHours();
+    const utcMinute = utcDate.getUTCMinutes();
+
+    // 計算（UTC時刻で）
     const sunSign  = getSunSign(month, day);
-    const moonSign = getMoonSign(year, month, day, hour, minute);
+    const moonSign = getMoonSign(utcYear, utcMonth, utcDay, utcHour, utcMinute);
 
     let ascSign = undefined;
     if (hasTime) {
       const [lat, lon] = resolveCoords(birthplace);
-      ascSign = getAscendant(year, month, day, hour, minute, lat, lon);
+      ascSign = getAscendant(utcYear, utcMonth, utcDay, utcHour, utcMinute, lat, lon);
     }
 
     // コンテンツ

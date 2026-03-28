@@ -45,19 +45,20 @@ src/
     astrology/    # 占星術計算ロジック
       signs.ts    # ZODIAC_SIGNS定数・SIGN_BOUNDARIES定数
       sun.ts      # getSunSign(month, day) → ZodiacSign
-      moon.ts     # getMoonSign() → ZodiacSign | undefined（stub）
-      ascendant.ts # getAscendant() → ZodiacSign | undefined（stub）
+      moon.ts     # getMoonSign(year, month, day, hour, minute) → ZodiacSign
+      ascendant.ts # getAscendant(year, month, day, hour, minute, lat, lon) → ZodiacSign
     utils/        # 汎用ユーティリティ
       date.ts     # parseBirthDate(), validateBirthData()
       format.ts   # SIGN_LABELS, toJaLabel(), toSymbol()
-    content.ts    # getReading(sign, type) → Promise<string>（placeholder）
+    content.ts    # getReading(sign, type) → Promise<string>（未使用・将来削除可）
+  content/        # Astro Content Collections（src/ 内に配置）
+    config.ts     # コレクション定義（signSchema）
+    sun-signs/    # 太陽星座別リーディングコンテンツ（*.md × 12）
+    moon-signs/   # 月星座別リーディングコンテンツ（*.md × 12）
+    ascendants/   # アセンダント別リーディングコンテンツ（*.md × 12）
   pages/          # ページコンポーネント（フレームワーク依存）
   components/     # UIコンポーネント（フレームワーク依存）
   styles/         # スタイルシート
-content/
-  sun-signs/      # 太陽星座別リーディングコンテンツ（*.md）
-  moon-signs/     # 月星座別リーディングコンテンツ（*.md）
-  ascendants/     # アセンダント別リーディングコンテンツ（*.md）
 public/
   images/
   fonts/

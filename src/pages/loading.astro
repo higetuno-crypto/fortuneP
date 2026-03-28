@@ -4,13 +4,25 @@ import "../styles/global.css";
 
 function rnd(a: number, b: number) { return a + Math.random() * (b - a); }
 
-const stars = Array.from({ length: 90 }, () => ({
+const microStars = Array.from({ length: 140 }, () => ({
   x: rnd(0, 100), y: rnd(0, 100),
-  s: Math.random() < 0.75 ? 1 : 1.5,
-  op: rnd(0.2, 0.8),
-  dur: rnd(2.5, 6),
-  del: rnd(0, 5),
+  s: Math.random() < 0.6 ? 0.8 : 1,
+  op: rnd(0.15, 0.5), dur: rnd(3, 8), del: rnd(0, 7),
+  color: Math.random() < 0.3 ? '#d0e4ff' : '#ffffff',
 }));
+const smallStars = Array.from({ length: 55 }, () => ({
+  x: rnd(0, 100), y: rnd(0, 100),
+  s: rnd(1.2, 2), op: rnd(0.4, 0.8), dur: rnd(2, 5), del: rnd(0, 5),
+  color: Math.random() < 0.35 ? '#c8dcff' : '#ffffff',
+}));
+const brightStars = Array.from({ length: 7 }, () => ({
+  x: rnd(5, 95), y: rnd(5, 90),
+  s: rnd(2.5, 3.2), op: rnd(0.7, 1), dur: rnd(2, 4), del: rnd(0, 4),
+}));
+const spikeStars = [
+  { x: rnd(20, 40), y: rnd(10, 25) },
+  { x: rnd(65, 85), y: rnd(65, 85) },
+];
 ---
 
 <Layout title="星を読んでいます">
@@ -21,9 +33,17 @@ const stars = Array.from({ length: 90 }, () => ({
 
   <!-- 星空 -->
   <div class="layer-stars" aria-hidden="true">
-    {stars.map(s => (
-      <div class="star-tiny"
-        style={`left:${s.x}%;top:${s.y}%;width:${s.s}px;height:${s.s}px;opacity:${s.op};animation-duration:${s.dur}s;animation-delay:${s.del}s`}></div>
+    {microStars.map(s => (
+      <div class="star-micro" style={`left:${s.x}%;top:${s.y}%;width:${s.s}px;height:${s.s}px;opacity:${s.op};animation-duration:${s.dur}s;animation-delay:${s.del}s;background:${s.color}`}></div>
+    ))}
+    {smallStars.map(s => (
+      <div class="star-small" style={`left:${s.x}%;top:${s.y}%;width:${s.s}px;height:${s.s}px;opacity:${s.op};animation-duration:${s.dur}s;animation-delay:${s.del}s;background:${s.color}`}></div>
+    ))}
+    {brightStars.map(s => (
+      <div class="star-bright" style={`left:${s.x}%;top:${s.y}%;width:${s.s}px;height:${s.s}px;opacity:${s.op};animation-duration:${s.dur}s;animation-delay:${s.del}s`}></div>
+    ))}
+    {spikeStars.map(s => (
+      <div class="star-spike" style={`left:${s.x}%;top:${s.y}%`}></div>
     ))}
   </div>
 
@@ -132,7 +152,10 @@ const stars = Array.from({ length: 90 }, () => ({
 
 .bg-space {
   position: absolute; inset: 0;
-  background: radial-gradient(ellipse at 50% 0%, #12082e 0%, #06081a 40%, #050712 100%);
+  background:
+    radial-gradient(ellipse 80% 30% at 50% 105%, rgba(30,60,140,0.35) 0%, transparent 100%),
+    radial-gradient(ellipse 60% 50% at 50% 50%, rgba(15,30,80,0.35) 0%, transparent 70%),
+    linear-gradient(180deg, #060c1e 0%, #08102a 40%, #050d20 75%, #030810 100%);
   z-index: 0;
 }
 
@@ -143,20 +166,58 @@ const stars = Array.from({ length: 90 }, () => ({
 .layer-stars { z-index: 1; }
 .layer-bokeh { z-index: 2; }
 
-.star-tiny {
-  position: absolute;
-  border-radius: 50%;
-  background: white;
+.star-micro {
+  position: absolute; border-radius: 50%;
+  animation: twinkle-slow ease-in-out infinite;
+}
+.star-small {
+  position: absolute; border-radius: 50%;
   animation: twinkle ease-in-out infinite;
 }
-@keyframes twinkle {
-  0%, 100% { opacity: var(--op, 0.6); transform: scale(1); }
-  50%       { opacity: calc(var(--op, 0.6) * 0.2); transform: scale(0.6); }
+.star-bright {
+  position: absolute; border-radius: 50%;
+  background: #ffffff;
+  box-shadow:
+    0 0 2px 1px rgba(255,255,255,0.95),
+    0 0 6px 2px rgba(200,220,255,0.6),
+    0 0 14px 5px rgba(160,190,255,0.25),
+    0 0 28px 8px rgba(120,160,255,0.1);
+  animation: twinkle-bright ease-in-out infinite;
+}
+.star-spike {
+  position: absolute;
+  width: 4px; height: 4px; margin: -2px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow:
+    0 0 3px 2px rgba(255,255,255,1),
+    0 0 8px 4px rgba(200,225,255,0.7),
+    0 0 20px 8px rgba(160,195,255,0.35),
+    0 0 40px 14px rgba(120,165,255,0.12);
+  animation: spike-pulse 3s ease-in-out infinite;
+}
+.star-spike::before {
+  content: '';
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  width: 55px; height: 1px;
+  background: linear-gradient(to right, transparent, rgba(200,225,255,0.35) 30%, rgba(255,255,255,0.7) 50%, rgba(200,225,255,0.35) 70%, transparent);
+}
+.star-spike::after {
+  content: '';
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%) rotate(90deg);
+  width: 55px; height: 1px;
+  background: linear-gradient(to right, transparent, rgba(200,225,255,0.35) 30%, rgba(255,255,255,0.7) 50%, rgba(200,225,255,0.35) 70%, transparent);
 }
 
+@keyframes twinkle-slow { 0%,100%{opacity:inherit;transform:scale(1)} 50%{opacity:0.05;transform:scale(0.5)} }
+@keyframes twinkle      { 0%,100%{opacity:inherit;transform:scale(1)} 50%{opacity:0.1;transform:scale(0.6)} }
+@keyframes twinkle-bright { 0%,100%{opacity:inherit;transform:scale(1)} 40%{opacity:0.2;transform:scale(0.7)} 60%{opacity:0.2;transform:scale(0.7)} }
+@keyframes spike-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.55;transform:scale(0.85)} }
+
 .bokeh {
-  position: absolute;
-  border-radius: 50%;
+  position: absolute; border-radius: 50%;
   background: radial-gradient(circle at 38% 32%, rgba(240,210,60,1) 0%, rgba(201,168,76,0.35) 45%, transparent 70%);
   filter: blur(10px);
   animation: bk-float 4.5s ease-in-out infinite;
@@ -165,8 +226,6 @@ const stars = Array.from({ length: 90 }, () => ({
   0%,100% { transform: translateY(0) scale(1); }
   50%      { transform: translateY(-8px) scale(1.06); }
 }
-
-.motif { position: absolute; pointer-events: none; z-index: 3; }
 
 /* ローディングコンテンツ */
 .loading-content {

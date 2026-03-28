@@ -1,0 +1,190 @@
+document:
+  title: "Unified Context: three.js / WebGL 星空・星座・流れ星表現"
+  version: "integrated_from_record_1_2_3"
+  language: "machine-first"
+  output_mode: "AI-readable"
+  purpose:
+    - "既存Webサイトへ three.js / WebGL 系の星空演出を導入するための統合知識ベース"
+    - "星空背景、粒子表現、星座表現、流れ星表現を一つの設計文脈に統合する"
+    - "実装計画・設計判断・AIコーディング指示の前処理として使う"
+
+sources:
+  - id: "record_1"
+    title: "Exploring the Cosmos with WebGL"
+    author: "Jim Boswell"
+    domain: "byhook.com / Hook"
+    genre: "technical case study / prototype log"
+    main_theme: "WebGLを主役ではなく雰囲気を強める演出レイヤーとして使う"
+  - id: "record_2"
+    title: "Coding the stars - an interactive constellation with Three.js and React Three Fiber"
+    domain: "supabase.com"
+    main_theme: "React Three Fiberで粒子群に意味ある形状とデータ対応を与える"
+  - id: "record_3"
+    title: "three.js 星空 + 流れ星 実装知識統合"
+    main_theme: "既存サイトにthree.jsの星空背景と流れ星を導入するための機械可読仕様"
+
+global_objective:
+  primary_targets:
+    - "existing website に three.js / WebGL ベースの夜空演出を導入する"
+    - "背景として静かな星空を常時表示する"
+    - "必要に応じて星座・粒子形状・データ駆動表現を重ねる"
+    - "低頻度で流れ星を発生させ、短いアクセントを作る"
+  strategic_positioning:
+    - "WebGLはサイト全体を支配する主役ではなく、体験を強化する演出レイヤーとして扱う"
+    - "まず最小構成を成立させ、その後に質感・自然さ・演出を足す"
+    - "背景星空 / 星座粒子 / 流れ星 / optional postFX をモジュール分離する"
+
+high_level_design_principles:
+  - "WebGLは補助演出レイヤーとして使っても十分価値がある"
+  - "最初から全部やらず、四角形 / 点 / 単純粒子から段階的に進める"
+  - "骨格は deterministic math で作る"
+  - "自然さは stochastic noise / random offsets で与える"
+  - "見た目の完成度より、探索価値と調整可能性を優先する"
+  - "データ連携は描画安定後に入れる"
+  - "背景の静けさとアクセントの強さを分離する"
+  - "静的3Dだけで完結させず、必要なら post-processing で最終印象を調整する"
+
+decision_framework:
+  framework_mode:
+    vanilla_threejs:
+      object_management: "scene.add/remove ベース"
+      suitable_for:
+        - "既存サイトに軽量な形で差し込む場合"
+        - "React 非採用サイト"
+    react_three_fiber:
+      object_management: "JSX child composition / conditional mount-unmount"
+      suitable_for:
+        - "React / Next.js ベースの既存サイト"
+        - "状態管理と描画の統合"
+  rendering_strategy_selection:
+    background_stars:
+      recommended: "Points-based particle field"
+    constellation_or_data_particles:
+      recommended: "mesh particles or reusable geometry/material + per-particle update"
+    shooting_star:
+      baseline: "bright head + diagonal movement"
+      recommended: "head + trail"
+
+integrated_stack:
+  core_runtime:
+    - "JavaScript or TypeScript"
+    - "three"
+  rendering_core:
+    - "WebGL / Scene / PerspectiveCamera / WebGLRenderer"
+  geometry_patterns:
+    - "BufferGeometry + Points"
+    - "PlaneGeometry + InstancedMesh"
+    - "circleGeometry + mesh"
+  materials_and_visuals:
+    - "PointsMaterial"
+    - "MeshStandardMaterial"
+    - "texture-based star sprites"
+    - "additive blending"
+    - "emissive / bright mesh for shooting stars"
+  optional_postfx:
+    - "zoom blur"
+    - "chromatic aberration"
+    - "bloom"
+
+architecture:
+  modules:
+    - id: "scene.bootstrap"
+      responsibility: ["scene生成", "camera生成", "renderer生成", "canvas接続", "resize対応"]
+    - id: "stars.field"
+      responsibility: ["星配置データ生成", "geometry/material/object生成", "backgroundとしてシーンへ登録"]
+    - id: "shootingstar.spawner"
+      responsibility: ["流れ星発生タイミング制御", "開始位置決定", "速度決定", "寿命設定"]
+    - id: "shootingstar.entity"
+      responsibility: ["head本体", "trail", "alive/dead state", "per-frame state update"]
+    - id: "animation.loop"
+      responsibility: ["時間更新", "カメラ or 星空の微運動", "粒子位置更新", "流れ星位置更新", "寿命切れ削除"]
+
+progressive_build_order:
+  - step: 1
+    name: "最小描画基盤"
+    done_when: ["scene / camera / renderer が動作する"]
+  - step: 2
+    name: "背景星空の最小実装"
+    done_when: ["Points が表示される", "背景として十分な密度がある"]
+  - step: 3
+    name: "アニメーションループ導入"
+    done_when: ["elapsed time ベースの更新が動く"]
+  - step: 4
+    name: "星の質感向上"
+    options: ["texture-based stars", "random scale / brightness", "additive blending"]
+  - step: 5
+    name: "空間分布の改善"
+    done_when: ["球状分布 / 密度差 / 中央空洞が必要に応じて導入される"]
+  - step: 6
+    name: "流れ星最小実装"
+    done_when: ["発光体1個が斜め移動する", "寿命終了で消える"]
+  - step: 7
+    name: "流れ星の尾・演出追加"
+    done_when: ["trail がつく", "age に応じて brightness / opacity / scale が変化する"]
+  - step: 8
+    name: "GUI / tuning 導入"
+    done_when: ["粒子数、速度、密度などがリアルタイム調整できる"]
+  - step: 9
+    name: "postFX 導入"
+    done_when: ["bloom / zoom blur が必要時のみ追加される"]
+
+math_and_motion_model:
+  base_motion_rules:
+    - "frame依存の固定量だけで設計しない"
+    - "elapsed time または delta で計算する"
+  orbital_math:
+    - "x = sin(t) * radiusX"
+    - "y = cos(t) * radiusY"
+  per_particle_phase_model:
+    expression: "t' = t * speed + delayOffset"
+    purpose: ["位相差", "同期崩し", "自然化"]
+  shooting_star_motion:
+    rules:
+      - "開始位置は上部または片側上端"
+      - "速度は斜め下方向"
+      - "短寿命"
+      - "brightness / scale / opacity は age に応じて補間"
+
+color_and_visual_style:
+  blending_rules:
+    additive_blending:
+      benefits: ["重なりが光る", "宇宙感・発光感が出る"]
+  postfx_rules:
+    zoom_blur: "速度感・奥行き補強"
+    bloom: "強い発光体の補強"
+
+pitfalls_and_resolutions:
+  - id: "P1"
+    issue: "最初から全部やろうとして複雑化"
+    resolution: "四角形 / 点 / 発光点1個から始める"
+  - id: "P2"
+    issue: "星空に mesh を大量配置して重くする"
+    resolution: "Points ベース or InstancedMesh を使う"
+  - id: "P3"
+    issue: "ランダム配置が立方体になり不自然"
+    resolution: "sphere-based distribution / rejection sampling を検討する"
+  - id: "P4"
+    issue: "アニメーションが frame rate 依存"
+    resolution: "delta or elapsed time で計算する"
+  - id: "P5"
+    issue: "流れ星を最初から高機能にしすぎる"
+    resolution: "まず発光点1個 + 斜め移動 + 寿命だけで成立させる"
+
+compressed_ai_knowledge:
+  - "three.js の最小構成は Scene / Camera / Renderer"
+  - "背景星空は BufferGeometry + Points が最も軽量な基本解"
+  - "よりリッチな星空は InstancedMesh + texture sprite + additive blending が有効"
+  - "星の重なりを光らせたいなら additive blending を使う"
+  - "流れ星は bright head + diagonal movement + short lifetime で最小成立する"
+  - "trail を付けると速度感が強くなる"
+  - "アニメーションは elapsed time or delta ベースで計算する"
+  - "骨格は deterministic math、自然さは stochastic noise"
+  - "1 particle = 1 data record の設計が可能"
+  - "WebGLは主役でなく演出レイヤーでも成立する"
+
+visual_rules:
+  shooting_star:
+    direction: "上→下 または 右上→左下 の斜線"
+    duration: "短い (600-1800ms)"
+    frequency: "低頻度"
+    count_concurrent: "0-2程度"

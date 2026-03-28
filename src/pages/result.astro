@@ -1,0 +1,268 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "../layouts/Layout.astro";
+import "../styles/global.css";
+
+// ビルド時に全コンテンツを読み込み、クライアントに渡す
+const sunEntries = await getCollection("sun-signs");
+const moonEntries = await getCollection("moon-signs");
+const ascEntries = await getCollection("ascendants");
+
+type SignData = { label: string; body: string };
+
+const sunData: Record<string, SignData> = Object.fromEntries(
+  sunEntries.map((e) => [e.id, { label: e.data.label, body: e.body }])
+);
+const moonData: Record<string, SignData> = Object.fromEntries(
+  moonEntries.map((e) => [e.id, { label: e.data.label, body: e.body }])
+);
+const ascData: Record<string, SignData> = Object.fromEntries(
+  ascEntries.map((e) => [e.id, { label: e.data.label, body: e.body }])
+);
+---
+
+<Layout title="あなたの星読み">
+  <main
+    class="starfield min-h-screen bg-gradient-to-b from-fp-dark via-fp-navy to-fp-dark px-5 py-12"
+  >
+    <!-- ローディング中 -->
+    <div
+      id="state-loading"
+      class="flex min-h-screen flex-col items-center justify-center gap-4"
+    >
+      <span class="text-3xl text-fp-gold animate-pulse">✦</span>
+      <p class="text-sm text-fp-pearl/40">読み込んでいます</p>
+    </div>
+
+    <!-- エラー -->
+    <div id="state-error" class="hidden flex min-h-screen flex-col items-center justify-center gap-6 text-center">
+      <p class="text-fp-pearl/60">生年月日が見つかりませんでした</p>
+      <a href="/input" class="btn-gold text-sm">もう一度入力する</a>
+    </div>
+
+    <!-- 結果 -->
+    <div id="state-result" class="hidden max-w-lg mx-auto space-y-8">
+
+      <!-- ヘッダー -->
+      <div class="text-center fade-in">
+        <p class="text-xs tracking-[0.3em] text-fp-gold/60 uppercase mb-4">Your Reading</p>
+        <p id="result-date" class="text-xs text-fp-pearl/40"></p>
+      </div>
+
+      <!-- 3要素サマリーバッジ -->
+      <div id="result-badges" class="glass-card px-5 py-5 fade-in fade-in-delay-1">
+        <p class="text-xs tracking-widest text-fp-pearl/40 mb-4 text-center uppercase">
+          あなたの3つの星
+        </p>
+        <div class="grid grid-cols-3 gap-2 text-center">
+          <div>
+            <p class="text-lg text-fp-gold" id="badge-sun-symbol"></p>
+            <p class="text-[10px] text-fp-pearl/50 mt-0.5">太陽</p>
+            <p class="text-xs text-fp-pearl mt-1" id="badge-sun-label"></p>
+          </div>
+          <div>
+            <p class="text-lg text-fp-glow" id="badge-moon-symbol"></p>
+            <p class="text-[10px] text-fp-pearl/50 mt-0.5">月</p>
+            <p class="text-xs text-fp-pearl mt-1" id="badge-moon-label"></p>
+          </div>
+          <div>
+            <p class="text-lg text-fp-pearl/60" id="badge-asc-symbol"></p>
+            <p class="text-[10px] text-fp-pearl/50 mt-0.5">ASC</p>
+            <p class="text-xs text-fp-pearl mt-1" id="badge-asc-label"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 太陽星座セクション -->
+      <section class="glass-card px-5 py-6 fade-in fade-in-delay-2 space-y-4">
+        <div class="flex items-center gap-3">
+          <span class="text-2xl text-fp-gold">☀</span>
+          <div>
+            <p class="text-[10px] tracking-widest text-fp-gold/60 uppercase">Sun Sign · 表の核</p>
+            <h2 id="sun-label" class="text-lg font-serif font-light text-fp-pearl mt-0.5"></h2>
+          </div>
+        </div>
+        <div id="sun-body" class="text-sm leading-[1.9] text-fp-pearl/80 whitespace-pre-wrap"></div>
+      </section>
+
+      <!-- 月星座セクション -->
+      <section id="section-moon" class="glass-card px-5 py-6 fade-in fade-in-delay-3 space-y-4">
+        <div class="flex items-center gap-3">
+          <span class="text-2xl text-fp-glow">☽</span>
+          <div>
+            <p class="text-[10px] tracking-widest text-fp-glow/60 uppercase">Moon Sign · 心の奥</p>
+            <h2 id="moon-label" class="text-lg font-serif font-light text-fp-pearl mt-0.5"></h2>
+          </div>
+        </div>
+        <div id="moon-body" class="text-sm leading-[1.9] text-fp-pearl/80 whitespace-pre-wrap"></div>
+        <p id="moon-note" class="hidden text-[11px] text-fp-glow/50 border-t border-white/5 pt-3">
+          ※ 出生時間が分かるとより正確に読めます
+        </p>
+      </section>
+
+      <!-- アセンダントセクション -->
+      <section id="section-asc" class="glass-card px-5 py-6 fade-in fade-in-delay-4 space-y-4">
+        <div class="flex items-center gap-3">
+          <span class="text-2xl text-fp-pearl/60">↑</span>
+          <div>
+            <p class="text-[10px] tracking-widest text-fp-pearl/40 uppercase">Ascendant · 外側の入口</p>
+            <h2 id="asc-label" class="text-lg font-serif font-light text-fp-pearl mt-0.5"></h2>
+          </div>
+        </div>
+        <div id="asc-body" class="text-sm leading-[1.9] text-fp-pearl/80 whitespace-pre-wrap"></div>
+      </section>
+
+      <!-- ASC なし案内 -->
+      <div id="section-asc-missing" class="hidden glass-card px-5 py-5 text-center space-y-2">
+        <span class="text-xl text-fp-pearl/30">↑</span>
+        <p class="text-sm text-fp-pearl/50">アセンダント · 外側の入口</p>
+        <p class="text-xs text-fp-pearl/30 leading-relaxed">
+          出生時間が分かると、<br />アセンダントも読めます
+        </p>
+        <a href="/input" class="inline-block mt-2 text-xs text-fp-glow/60 underline underline-offset-4">
+          もう一度入力する
+        </a>
+      </div>
+
+      <!-- フッター -->
+      <div class="text-center pt-4 pb-8 space-y-4 fade-in fade-in-delay-4">
+        <a
+          href="/input"
+          class="inline-flex items-center gap-2 text-xs text-fp-pearl/40 hover:text-fp-pearl/70 transition-colors"
+        >
+          ← 別の生年月日で読む
+        </a>
+        <div class="pt-2">
+          <a href="/" class="text-xs text-fp-gold/40 hover:text-fp-gold/70 transition-colors">
+            fortuneP
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<!-- ビルド時のコンテンツデータをグローバルに注入 -->
+<script define:vars={{ sunData, moonData, ascData }}>
+  window.__fp_sun = sunData;
+  window.__fp_moon = moonData;
+  window.__fp_asc = ascData;
+</script>
+
+<script>
+  import { getSunSign, getMoonSign, getAscendant, toJaLabel, toSymbol } from "../lib/index";
+
+  // 主要都市の緯度経度
+  const CITY_COORDS: Record<string, [number, number]> = {
+    東京: [35.6895, 139.6917],
+    大阪: [34.6937, 135.5023],
+    京都: [35.0116, 135.7681],
+    名古屋: [35.1815, 136.9066],
+    札幌: [43.0642, 141.3469],
+    福岡: [33.5904, 130.4017],
+    仙台: [38.2688, 140.8721],
+    広島: [34.3963, 132.4596],
+    神戸: [34.6901, 135.1955],
+    横浜: [35.4437, 139.6380],
+    那覇: [26.2124, 127.6809],
+    金沢: [36.5944, 136.6256],
+    新潟: [37.9162, 139.0364],
+    熊本: [32.8031, 130.7079],
+    長崎: [32.7448, 129.8737],
+  };
+
+  function resolveCoords(birthplace: string): [number, number] {
+    for (const [city, coords] of Object.entries(CITY_COORDS)) {
+      if (birthplace.includes(city)) return coords;
+    }
+    return [35.6895, 139.6917]; // デフォルト: 東京
+  }
+
+  function show(id: string) {
+    document.getElementById(id)!.classList.remove("hidden");
+  }
+  function hide(id: string) {
+    document.getElementById(id)!.classList.add("hidden");
+  }
+  function setText(id: string, text: string) {
+    document.getElementById(id)!.textContent = text;
+  }
+
+  async function render() {
+    const params = new URLSearchParams(window.location.search);
+    const year  = parseInt(params.get("year")  ?? "");
+    const month = parseInt(params.get("month") ?? "");
+    const day   = parseInt(params.get("day")   ?? "");
+
+    if (!year || !month || !day || isNaN(year) || isNaN(month) || isNaN(day)) {
+      hide("state-loading");
+      show("state-error");
+      return;
+    }
+
+    const hourRaw    = params.get("hour");
+    const minuteRaw  = params.get("minute");
+    const birthplace = params.get("birthplace") ?? "";
+
+    const hasTime = hourRaw !== "" && hourRaw !== null;
+    const hour    = hasTime ? parseInt(hourRaw!) : 12;
+    const minute  = minuteRaw ? parseInt(minuteRaw) : 0;
+
+    // 計算
+    const sunSign  = getSunSign(month, day);
+    const moonSign = getMoonSign(year, month, day, hour, minute);
+
+    let ascSign = undefined;
+    if (hasTime) {
+      const [lat, lon] = resolveCoords(birthplace);
+      ascSign = getAscendant(year, month, day, hour, minute, lat, lon);
+    }
+
+    // コンテンツ
+    const sun  = (window as any).__fp_sun[sunSign];
+    const moon = (window as any).__fp_moon[moonSign];
+    const asc  = ascSign ? (window as any).__fp_asc[ascSign] : null;
+
+    // --- 描画 ---
+    hide("state-loading");
+    show("state-result");
+
+    // 日付
+    setText("result-date", `${year}年${month}月${day}日生まれ`);
+
+    // バッジ
+    setText("badge-sun-symbol",  toSymbol(sunSign));
+    setText("badge-sun-label",   toJaLabel(sunSign));
+    setText("badge-moon-symbol", toSymbol(moonSign));
+    setText("badge-moon-label",  toJaLabel(moonSign));
+    if (ascSign) {
+      setText("badge-asc-symbol", toSymbol(ascSign));
+      setText("badge-asc-label",  toJaLabel(ascSign));
+    } else {
+      setText("badge-asc-symbol", "—");
+      setText("badge-asc-label",  "未算出");
+    }
+
+    // 太陽
+    setText("sun-label", sun.label);
+    setText("sun-body",  sun.body.trim());
+
+    // 月
+    setText("moon-label", moon.label);
+    setText("moon-body",  moon.body.trim());
+    if (!hasTime) {
+      show("moon-note");
+    }
+
+    // アセンダント
+    if (asc && ascSign) {
+      setText("asc-label", asc.label);
+      setText("asc-body",  asc.body.trim());
+      show("section-asc");
+    } else {
+      show("section-asc-missing");
+    }
+  }
+
+  render();
+</script>

@@ -1,0 +1,189 @@
+---
+import Layout from "../layouts/Layout.astro";
+import "../styles/global.css";
+
+const currentYear = new Date().getFullYear();
+---
+
+<Layout title="生年月日を入力">
+  <main
+    class="starfield relative flex min-h-screen flex-col items-center bg-gradient-to-b from-fp-dark via-fp-navy to-fp-dark px-6 py-12"
+  >
+    <!-- 背景グロー -->
+    <div
+      class="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 h-64 w-64 rounded-full bg-fp-glow/10 blur-[80px]"
+    >
+    </div>
+
+    <!-- ヘッダー -->
+    <div class="relative z-10 w-full max-w-sm mb-10 fade-in">
+      <a href="/" class="text-fp-pearl/40 text-sm hover:text-fp-pearl/70 transition-colors">
+        ← fortuneP
+      </a>
+      <h1 class="mt-6 font-serif text-2xl font-light tracking-wide text-fp-pearl heading-glow">
+        あなたの生まれた日を<br />教えてください
+      </h1>
+      <p class="mt-2 text-xs text-fp-pearl/40 leading-relaxed">
+        生年月日だけで太陽星座と月星座を読みます。<br />
+        出生時間・出生地があると、アセンダントも読めます。
+      </p>
+    </div>
+
+    <!-- フォーム -->
+    <form
+      method="get"
+      action="/loading"
+      class="relative z-10 w-full max-w-sm space-y-6 fade-in fade-in-delay-1"
+      id="birth-form"
+    >
+      <!-- 生年月日（必須） -->
+      <div class="glass-card px-5 py-5 space-y-4">
+        <p class="text-xs tracking-widest text-fp-gold/80 uppercase">
+          生年月日 <span class="text-fp-gold">*</span>
+        </p>
+
+        <div>
+          <label class="form-label" for="year">年</label>
+          <input
+            id="year"
+            name="year"
+            type="number"
+            min="1900"
+            max={currentYear}
+            placeholder={String(currentYear - 20)}
+            required
+            class="input-dark"
+          />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="form-label" for="month">月</label>
+            <select id="month" name="month" required class="input-dark">
+              <option value="" disabled selected>選択</option>
+              {
+                Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                  <option value={m}>{m}月</option>
+                ))
+              }
+            </select>
+          </div>
+          <div>
+            <label class="form-label" for="day">日</label>
+            <select id="day" name="day" required class="input-dark">
+              <option value="" disabled selected>選択</option>
+              {
+                Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+                  <option value={d}>{d}日</option>
+                ))
+              }
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- 出生時間（任意） -->
+      <div class="glass-card px-5 py-5 space-y-4">
+        <p class="text-xs tracking-widest text-fp-pearl/50 uppercase">
+          出生時間 <span class="text-fp-pearl/30 text-[10px] normal-case">（任意）</span>
+        </p>
+        <p class="text-[11px] text-fp-pearl/30 -mt-2">
+          分かると、アセンダントも読めます
+        </p>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="form-label" for="hour">時</label>
+            <select id="hour" name="hour" class="input-dark">
+              <option value="">不明</option>
+              {
+                Array.from({ length: 24 }, (_, i) => i).map((h) => (
+                  <option value={h}>{h}時</option>
+                ))
+              }
+            </select>
+          </div>
+          <div>
+            <label class="form-label" for="minute">分</label>
+            <select id="minute" name="minute" class="input-dark">
+              <option value="">不明</option>
+              {
+                [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map((m) => (
+                  <option value={m}>{String(m).padStart(2, "0")}分</option>
+                ))
+              }
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- 出生地（任意） -->
+      <div class="glass-card px-5 py-5 space-y-3">
+        <p class="text-xs tracking-widest text-fp-pearl/50 uppercase">
+          出生地 <span class="text-fp-pearl/30 text-[10px] normal-case">（任意）</span>
+        </p>
+        <input
+          id="birthplace"
+          name="birthplace"
+          type="text"
+          placeholder="例：東京、大阪、札幌 など"
+          class="input-dark"
+        />
+        <p class="text-[11px] text-fp-pearl/30">
+          アセンダントの精度が上がります
+        </p>
+      </div>
+
+      <!-- エラー表示 -->
+      <p
+        id="form-error"
+        class="hidden text-center text-sm text-fp-glow/70"
+      >
+      </p>
+
+      <!-- 送信ボタン -->
+      <div class="text-center pt-2">
+        <button type="submit" class="btn-gold w-full text-base">
+          結果を見る
+        </button>
+      </div>
+    </form>
+
+    <p class="relative z-10 mt-8 text-center text-xs text-fp-pearl/20">
+      入力した情報は保存されません
+    </p>
+  </main>
+</Layout>
+
+<script>
+  const form = document.getElementById("birth-form") as HTMLFormElement;
+  const errorEl = document.getElementById("form-error") as HTMLParagraphElement;
+
+  form.addEventListener("submit", (e) => {
+    const year = parseInt(
+      (document.getElementById("year") as HTMLInputElement).value
+    );
+    const month = parseInt(
+      (document.getElementById("month") as HTMLSelectElement).value
+    );
+    const day = parseInt(
+      (document.getElementById("day") as HTMLSelectElement).value
+    );
+
+    if (!year || !month || !day) {
+      e.preventDefault();
+      errorEl.textContent = "生年月日を入力してください";
+      errorEl.classList.remove("hidden");
+      return;
+    }
+
+    if (year < 1900 || year > new Date().getFullYear()) {
+      e.preventDefault();
+      errorEl.textContent = "正しい年を入力してください";
+      errorEl.classList.remove("hidden");
+      return;
+    }
+
+    errorEl.classList.add("hidden");
+  });
+</script>

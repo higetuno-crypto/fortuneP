@@ -1,0 +1,116 @@
+---
+import Layout from "../layouts/Layout.astro";
+import "../styles/global.css";
+---
+
+<Layout title="星を読んでいます">
+  <main
+    class="starfield relative flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-fp-dark via-fp-navy to-fp-purple/20 px-6"
+  >
+    <!-- 背景グロー -->
+    <div
+      class="pointer-events-none absolute inset-0 flex items-center justify-center"
+    >
+      <div
+        class="h-[320px] w-[320px] rounded-full bg-fp-glow/10 blur-[100px]"
+      >
+      </div>
+    </div>
+
+    <!-- 星のアニメーション -->
+    <div class="relative z-10 flex flex-col items-center gap-10">
+      <div class="relative h-28 w-28">
+        <!-- 外周リング -->
+        <div
+          class="absolute inset-0 rounded-full border border-fp-glow/20 animate-[spin_8s_linear_infinite]"
+        >
+        </div>
+        <div
+          class="absolute inset-2 rounded-full border border-fp-gold/15 animate-[spin_5s_linear_infinite_reverse]"
+        >
+        </div>
+        <!-- 中心の星 -->
+        <div class="absolute inset-0 flex items-center justify-center">
+          <span
+            class="text-4xl text-fp-gold/80 animate-[pulse_3s_ease-in-out_infinite]"
+          >
+            ✦
+          </span>
+        </div>
+        <!-- 軌道上の点 -->
+        <div
+          class="absolute inset-0 animate-[spin_4s_linear_infinite]"
+        >
+          <div
+            class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 h-1.5 w-1.5 rounded-full bg-fp-glow"
+          >
+          </div>
+        </div>
+        <div
+          class="absolute inset-3 animate-[spin_6s_linear_infinite_reverse]"
+        >
+          <div
+            class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 h-1 w-1 rounded-full bg-fp-gold/80"
+          >
+          </div>
+        </div>
+      </div>
+
+      <!-- テキスト -->
+      <div class="text-center space-y-3">
+        <p class="font-serif text-lg font-light text-fp-pearl/90 tracking-wide">
+          星を読んでいます
+        </p>
+        <p
+          id="loading-text"
+          class="text-xs text-fp-pearl/40 transition-opacity duration-700"
+        >
+          太陽の位置を確認しています
+        </p>
+      </div>
+
+      <!-- ドットインジケーター -->
+      <div class="flex gap-2">
+        <div
+          class="h-1 w-1 rounded-full bg-fp-glow animate-[pulse_1.5s_ease-in-out_infinite]"
+        >
+        </div>
+        <div
+          class="h-1 w-1 rounded-full bg-fp-glow animate-[pulse_1.5s_ease-in-out_0.5s_infinite]"
+        >
+        </div>
+        <div
+          class="h-1 w-1 rounded-full bg-fp-glow animate-[pulse_1.5s_ease-in-out_1s_infinite]"
+        >
+        </div>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  const messages = [
+    "太陽の位置を確認しています",
+    "月の軌道を辿っています",
+    "星の言葉に耳を澄ませています",
+    "あなたの星座を読んでいます",
+  ];
+
+  const textEl = document.getElementById("loading-text")!;
+  let idx = 0;
+
+  const interval = setInterval(() => {
+    idx = (idx + 1) % messages.length;
+    textEl.style.opacity = "0";
+    setTimeout(() => {
+      textEl.textContent = messages[idx];
+      textEl.style.opacity = "1";
+    }, 350);
+  }, 1200);
+
+  // クエリパラメータをそのまま /result へ引き継ぐ
+  setTimeout(() => {
+    clearInterval(interval);
+    window.location.href = import.meta.env.BASE_URL + "result" + window.location.search;
+  }, 3000);
+</script>

@@ -1,0 +1,85 @@
+---
+import Layout from "../layouts/Layout.astro";
+import "../styles/global.css";
+---
+
+<Layout title="fortuneP">
+  <main
+    class="starfield relative flex min-h-screen flex-col items-center justify-between overflow-hidden bg-gradient-to-b from-fp-dark via-fp-navy to-fp-purple/30 px-6 py-16"
+  >
+    <!-- 背景グロー -->
+    <div
+      class="pointer-events-none absolute inset-0 flex items-center justify-center"
+    >
+      <div
+        class="h-[480px] w-[480px] rounded-full bg-fp-purple/20 blur-[120px]"
+      >
+      </div>
+    </div>
+
+    <!-- ヘッダー -->
+    <div class="relative z-10 text-center fade-in">
+      <p class="mb-3 text-xs tracking-[0.4em] text-fp-gold/70 uppercase">
+        Western Astrology
+      </p>
+      <h1
+        class="font-serif text-5xl font-light tracking-widest text-fp-pearl heading-glow"
+      >
+        fortuneP
+      </h1>
+    </div>
+
+    <!-- メインコピー -->
+    <div class="relative z-10 text-center fade-in fade-in-delay-1 max-w-xs">
+      <p class="text-lg font-light leading-relaxed text-fp-pearl/90">
+        表の自分と、<br />心の奥にある自分を<br />星から読む。
+      </p>
+      <p class="mt-4 text-sm leading-loose text-fp-pearl/40">
+        太陽 · 月 · アセンダント
+      </p>
+    </div>
+
+    <!-- 3要素説明 -->
+    <div
+      class="relative z-10 fade-in fade-in-delay-2 w-full max-w-sm space-y-3"
+    >
+      <div class="glass-card px-5 py-4 flex items-start gap-4">
+        <span class="text-2xl text-fp-gold">☀</span>
+        <div>
+          <p class="text-sm font-medium text-fp-pearl">太陽星座 · 表の核</p>
+          <p class="text-xs text-fp-pearl/50 mt-0.5">
+            人生で育てる中心テーマ
+          </p>
+        </div>
+      </div>
+      <div class="glass-card px-5 py-4 flex items-start gap-4">
+        <span class="text-2xl text-fp-glow">☽</span>
+        <div>
+          <p class="text-sm font-medium text-fp-pearl">月星座 · 心の奥</p>
+          <p class="text-xs text-fp-pearl/50 mt-0.5">感情の土台・本音の反応</p>
+        </div>
+      </div>
+      <div class="glass-card px-5 py-4 flex items-start gap-4">
+        <span class="text-2xl text-fp-pearl/70">↑</span>
+        <div>
+          <p class="text-sm font-medium text-fp-pearl">
+            アセンダント · 外側の入口
+          </p>
+          <p class="text-xs text-fp-pearl/50 mt-0.5">
+            第一印象・人から見える雰囲気
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="relative z-10 fade-in fade-in-delay-3 text-center">
+      <a href={`${import.meta.env.BASE_URL}input`} class="btn-gold text-base">
+        星を読む
+      </a>
+      <p class="mt-4 text-xs text-fp-pearl/30">
+        生年月日を入力するだけで始められます
+      </p>
+    </div>
+  </main>
+</Layout>

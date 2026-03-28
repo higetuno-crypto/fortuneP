@@ -5,13 +5,13 @@ import "../styles/global.css";
 // ビルド時に星を生成（静的HTML = 高速）
 function rnd(a: number, b: number) { return a + Math.random() * (b - a); }
 
-// 微小星: 密度で「天の川」的なテクスチャを作る
-const microStars = Array.from({ length: 200 }, () => ({
-  x: rnd(0, 100), y: rnd(0, 100),
+// 微小星: 密度で「天の川」的なテクスチャを作る（ビューポート外まで拡張）
+const microStars = Array.from({ length: 380 }, () => ({
+  x: rnd(-2, 102), y: rnd(-2, 102),
   s: Math.random() < 0.6 ? 0.8 : 1,
-  op: rnd(0.18, 0.55),
-  dur: rnd(3, 8),
-  del: rnd(0, 7),
+  op: rnd(0.15, 0.52),
+  dur: rnd(3, 9),
+  del: rnd(0, 9),
   color: Math.random() < 0.3 ? '#d0e4ff' : '#ffffff',
 }));
 
@@ -178,17 +178,19 @@ const blazingY = rnd(15, 35);
   user-select: none;
 }
 
-/* ======== 背景: 深ネイビーブルー（OSR参考） ======== */
+/* ======== 背景: プラネタリウムドーム（球殻の内側） ======== */
 .bg-space {
   position: absolute; inset: 0;
-  /* ベース: 深ネイビー */
   background:
-    /* 下部の青い大気光（nebula glow） */
-    radial-gradient(ellipse 80% 30% at 50% 105%, rgba(30, 60, 140, 0.35) 0%, transparent 100%),
-    /* 中央のほのかな輝き */
-    radial-gradient(ellipse 60% 50% at 50% 50%, rgba(15, 30, 80, 0.4) 0%, transparent 70%),
-    /* ベースグラデーション */
-    linear-gradient(180deg, #060c1e 0%, #08102a 40%, #050d20 75%, #030810 100%);
+    /* ピンク星雲（右上）— 実際の天の川写真から */
+    radial-gradient(ellipse 30% 20% at 72% 14%, rgba(175, 50, 150, 0.11) 0%, transparent 100%),
+    /* 天の川の温もり — 対角線上の淡い琥珀 */
+    radial-gradient(ellipse 55% 65% at 38% 60%, rgba(85, 58, 22, 0.09) 0%, transparent 100%),
+    /* ドーム内部 — 球殻の中心感。線形でなく球形の深さ */
+    radial-gradient(ellipse 130% 100% at 50% 45%, rgba(16, 32, 82, 0.55) 0%, rgba(3, 7, 20, 0.92) 60%, #010509 100%),
+    /* 下部大気グロウ */
+    radial-gradient(ellipse 80% 25% at 50% 108%, rgba(28, 58, 138, 0.28) 0%, transparent 100%),
+    #010509;
   z-index: 0;
 }
 
@@ -197,8 +199,18 @@ const blazingY = rnd(15, 35);
   position: absolute; inset: 0;
   pointer-events: none;
 }
-.layer-stars { z-index: 1; }
+.layer-stars {
+  z-index: 1;
+  /* 星空の中を漂う感覚 — 90秒かけて非常に緩やかに呼吸 */
+  animation: star-drift 90s ease-in-out infinite;
+  transform-origin: 50% 50%;
+}
 .layer-bokeh { z-index: 2; }
+
+@keyframes star-drift {
+  0%,100% { transform: scale(1.000); }
+  50%     { transform: scale(1.018); }
+}
 
 /* 微小星: 密度テクスチャ */
 .star-micro {

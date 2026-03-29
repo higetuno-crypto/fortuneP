@@ -149,7 +149,7 @@ const spikeStars = [{ x: rnd(70, 90), y: rnd(5, 20) }];
       </section>
 
       <!-- アセンダント -->
-      <section id="section-asc" class="reading-card glass-card fade-in fade-in-delay-4">
+      <section id="section-asc" class="hidden reading-card glass-card fade-in fade-in-delay-4">
         <div class="reading-header">
           <span class="reading-icon asc-icon">↑</span>
           <div>
@@ -330,6 +330,7 @@ const spikeStars = [{ x: rnd(70, 90), y: rnd(5, 20) }];
   }
 
   async function render() {
+    try {
     const params = new URLSearchParams(window.location.search);
     const year  = parseInt(params.get("year")  ?? "");
     const month = parseInt(params.get("month") ?? "");
@@ -425,6 +426,11 @@ const spikeStars = [{ x: rnd(70, 90), y: rnd(5, 20) }];
     } else {
       const ascItem = document.getElementById("sc-asc-item");
       if (ascItem) ascItem.style.display = 'none';
+    }
+    } catch (err) {
+      console.error("[fortuneP] render error:", err);
+      hide("state-loading");
+      show("state-error");
     }
   }
 

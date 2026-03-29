@@ -120,7 +120,10 @@ const spikeStars = [{ x: rnd(70, 90), y: rnd(5, 20) }];
         <div class="reading-header">
           <span class="reading-icon sun-icon">☀</span>
           <div>
-            <p class="reading-type">Sun Sign · 表の核</p>
+            <div class="reading-type-row">
+              <p class="reading-type">Sun Sign · 表の核</p>
+              <button class="gloss-btn" onclick="openGloss('sun')" aria-label="太陽星座について">？</button>
+            </div>
             <h2 class="reading-sign-label" id="sun-label"></h2>
           </div>
         </div>
@@ -132,7 +135,10 @@ const spikeStars = [{ x: rnd(70, 90), y: rnd(5, 20) }];
         <div class="reading-header">
           <span class="reading-icon moon-icon">☽</span>
           <div>
-            <p class="reading-type moon-type">Moon Sign · 心の奥</p>
+            <div class="reading-type-row">
+              <p class="reading-type moon-type">Moon Sign · 心の奥</p>
+              <button class="gloss-btn" onclick="openGloss('moon')" aria-label="月星座について">？</button>
+            </div>
             <h2 class="reading-sign-label" id="moon-label"></h2>
           </div>
         </div>
@@ -147,7 +153,10 @@ const spikeStars = [{ x: rnd(70, 90), y: rnd(5, 20) }];
         <div class="reading-header">
           <span class="reading-icon asc-icon">↑</span>
           <div>
-            <p class="reading-type asc-type">Ascendant · 外側の入口</p>
+            <div class="reading-type-row">
+              <p class="reading-type asc-type">Ascendant · 外側の入口</p>
+              <button class="gloss-btn" onclick="openGloss('asc')" aria-label="アセンダントについて">？</button>
+            </div>
             <h2 class="reading-sign-label" id="asc-label"></h2>
           </div>
         </div>
@@ -160,6 +169,34 @@ const spikeStars = [{ x: rnd(70, 90), y: rnd(5, 20) }];
         <p class="asc-missing-title">アセンダント · 外側の入口</p>
         <p class="asc-missing-body">出生時間が分かると、<br />アセンダントも読めます</p>
         <a href={`${import.meta.env.BASE_URL}/input`} class="asc-missing-link">もう一度入力する</a>
+      </div>
+
+      <!-- シェアセクション -->
+      <div class="share-section fade-in fade-in-delay-4">
+        <!-- スクリーンショット用カード -->
+        <div class="share-card starfield">
+          <p class="sc-brand">✦ fortuneP ✦</p>
+          <div class="sc-signs">
+            <div class="sc-item">
+              <p class="sc-sym sc-sun-sym" id="sc-sun-sym"></p>
+              <p class="sc-role">太陽</p>
+              <p class="sc-sign-name" id="sc-sun-name"></p>
+            </div>
+            <div class="sc-item">
+              <p class="sc-sym sc-moon-sym" id="sc-moon-sym"></p>
+              <p class="sc-role">月</p>
+              <p class="sc-sign-name" id="sc-moon-name"></p>
+            </div>
+            <div class="sc-item" id="sc-asc-item">
+              <p class="sc-sym sc-asc-sym" id="sc-asc-sym"></p>
+              <p class="sc-role">ASC</p>
+              <p class="sc-sign-name" id="sc-asc-name"></p>
+            </div>
+          </div>
+          <p class="sc-tagline">星が語るもの</p>
+        </div>
+        <!-- シェアボタン -->
+        <button class="share-btn" onclick="shareResult()">シェアする</button>
       </div>
 
       <!-- フッター -->
@@ -181,6 +218,15 @@ const spikeStars = [{ x: rnd(70, 90), y: rnd(5, 20) }];
     </div>
 
   </div><!-- /result-scroll -->
+
+  <!-- 用語補足モーダル -->
+  <div id="gloss-backdrop" class="gloss-backdrop hidden" onclick="closeGloss()">
+    <div class="gloss-modal" onclick="event.stopPropagation()">
+      <button class="gloss-close" onclick="closeGloss()" aria-label="閉じる">✕</button>
+      <div id="gloss-content"></div>
+    </div>
+  </div>
+
 </main>
 </Layout>
 
@@ -193,6 +239,59 @@ const spikeStars = [{ x: rnd(70, 90), y: rnd(5, 20) }];
 
 <script>
   import { getSunSign, getMoonSign, getAscendant, toJaLabel, toSymbol } from "../lib/index";
+
+  // ======== 用語辞典 ========
+  const GLOSSARY: Record<string, { title: string; body: string }> = {
+    sun: {
+      title: '太陽星座 — 表の核',
+      body: '太陽は、あなたが人生で育てていく中心のテーマです。外から見た「あなたらしさ」の核心でもあり、意識的に成長させていく光。生年月日だけで計算できます。',
+    },
+    moon: {
+      title: '月星座 — 心の奥',
+      body: '月は、感情の反応の仕方・安心の仕方を表します。一人のときや、リラックスしているときに自然と出てくる素の状態。太陽が「外に向けた光」なら、月は「内側の安心」です。',
+    },
+    asc: {
+      title: 'アセンダント — 外側の入口',
+      body: 'アセンダントは、生まれた瞬間に東の地平線から昇っていた星座。初対面の人に伝わりやすい雰囲気・第一印象に関わります。正確な出生時間が必要です。',
+    },
+  };
+
+  (window as any).openGloss = (type: string) => {
+    const g = GLOSSARY[type];
+    if (!g) return;
+    document.getElementById('gloss-content')!.innerHTML =
+      `<p class="gloss-title">${g.title}</p><p class="gloss-body">${g.body}</p>`;
+    document.getElementById('gloss-backdrop')!.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  };
+  (window as any).closeGloss = () => {
+    document.getElementById('gloss-backdrop')!.classList.add('hidden');
+    document.body.style.overflow = '';
+  };
+
+  // ======== シェア ========
+  (window as any).shareResult = async () => {
+    const sunName  = document.getElementById('sc-sun-name')!.textContent ?? '';
+    const moonName = document.getElementById('sc-moon-name')!.textContent ?? '';
+    const ascEl    = document.getElementById('sc-asc-item');
+    const ascName  = ascEl?.style.display !== 'none'
+      ? document.getElementById('sc-asc-name')?.textContent
+      : null;
+
+    const parts = [`太陽 ${sunName}`, `月 ${moonName}`];
+    if (ascName) parts.push(`ASC ${ascName}`);
+    const text = parts.join(' · ') + '\n#fortuneP';
+    const url  = `${window.location.origin}${import.meta.env.BASE_URL}/`;
+    const full = `${text}\n${url}`;
+
+    if (navigator.share) {
+      try { await navigator.share({ text: full }); return; } catch (_) {}
+    }
+    window.open(
+      `https://twitter.com/intent/tweet?text=${encodeURIComponent(full)}`,
+      '_blank', 'noopener'
+    );
+  };
 
   // 主要都市の緯度経度
   const CITY_COORDS: Record<string, [number, number]> = {
@@ -313,6 +412,19 @@ const spikeStars = [{ x: rnd(70, 90), y: rnd(5, 20) }];
       show("section-asc");
     } else {
       show("section-asc-missing");
+    }
+
+    // シェアカード
+    setText("sc-sun-sym",  toSymbol(sunSign));
+    setText("sc-sun-name", toJaLabel(sunSign));
+    setText("sc-moon-sym", toSymbol(moonSign));
+    setText("sc-moon-name", toJaLabel(moonSign));
+    if (ascSign) {
+      setText("sc-asc-sym",  toSymbol(ascSign));
+      setText("sc-asc-name", toJaLabel(ascSign));
+    } else {
+      const ascItem = document.getElementById("sc-asc-item");
+      if (ascItem) ascItem.style.display = 'none';
     }
   }
 
@@ -599,4 +711,135 @@ const spikeStars = [{ x: rnd(70, 90), y: rnd(5, 20) }];
   transition: color 0.2s;
 }
 .footer-home-link:hover { color: rgba(201,168,76,0.7); }
+
+/* ======== 用語「？」ボタン ======== */
+.reading-type-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.gloss-btn {
+  width: 17px; height: 17px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(201,168,76,0.3);
+  color: rgba(201,168,76,0.5);
+  font-size: 0.6rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.gloss-btn:active { background: rgba(201,168,76,0.15); }
+
+/* ======== 用語補足モーダル ======== */
+.gloss-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(1, 5, 9, 0.78);
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+}
+.gloss-backdrop.hidden { display: none; }
+.gloss-modal {
+  width: 100%;
+  background:
+    radial-gradient(ellipse 80% 40% at 50% 100%, rgba(28,58,138,0.3) 0%, transparent 100%),
+    #0c1020;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-bottom: none;
+  border-radius: 20px 20px 0 0;
+  padding: 2rem 1.5rem 2.5rem;
+  position: relative;
+}
+.gloss-close {
+  position: absolute; top: 1rem; right: 1rem;
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(232,224,208,0.4);
+  font-size: 0.75rem;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05);
+}
+.gloss-title {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 0.95rem; font-weight: 300;
+  color: rgba(201,168,76,0.9);
+  margin-bottom: 0.9rem;
+}
+.gloss-body {
+  font-size: 0.83rem;
+  line-height: 1.95;
+  color: rgba(232,224,208,0.7);
+}
+
+/* ======== シェアセクション ======== */
+.share-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+.share-card {
+  width: 100%;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 100%, rgba(28,58,138,0.35) 0%, transparent 100%),
+    rgba(5, 8, 20, 0.92);
+  border: 1px solid rgba(201,168,76,0.28);
+  border-radius: 20px;
+  padding: 1.75rem 1.25rem;
+  text-align: center;
+}
+.sc-brand {
+  font-family: 'Cinzel', serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.35em;
+  color: rgba(201,168,76,0.55);
+  margin-bottom: 1.5rem;
+}
+.sc-signs {
+  display: flex;
+  justify-content: center;
+  gap: 0.25rem;
+}
+.sc-item {
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 0.25rem;
+}
+.sc-sym { font-size: 1.5rem; }
+.sc-sun-sym  { color: rgba(201,168,76,0.9); }
+.sc-moon-sym { color: rgba(139,167,217,0.9); }
+.sc-asc-sym  { color: rgba(232,224,208,0.5); }
+.sc-role {
+  font-size: 0.55rem;
+  letter-spacing: 0.2em;
+  color: rgba(232,224,208,0.3);
+}
+.sc-sign-name {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 0.9rem; font-weight: 300;
+  color: rgba(232,224,208,0.9);
+}
+.sc-tagline {
+  font-size: 0.58rem;
+  letter-spacing: 0.3em;
+  color: rgba(201,168,76,0.3);
+  margin-top: 1.5rem;
+}
+.share-btn {
+  min-width: 200px; min-height: 48px;
+  border-radius: 9999px;
+  border: 1px solid rgba(201,168,76,0.5);
+  background: rgba(201,168,76,0.08);
+  color: rgba(201,168,76,0.9);
+  font-size: 0.875rem;
+  letter-spacing: 0.1em;
+  transition: all 0.2s;
+}
+.share-btn:active {
+  transform: scale(0.95);
+  background: rgba(201,168,76,0.18);
+}
 </style>

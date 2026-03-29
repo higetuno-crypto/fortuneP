@@ -364,16 +364,26 @@ const spikeStars = [{ x: rnd(70, 90), y: rnd(5, 20) }];
     const sunSign  = getSunSign(month, day);
     const moonSign = getMoonSign(utcYear, utcMonth, utcDay, utcHour, utcMinute);
 
-    let ascSign = undefined;
+    let ascSign: string | undefined = undefined;
     if (hasTime) {
       const [lat, lon] = resolveCoords(birthplace);
       ascSign = getAscendant(utcYear, utcMonth, utcDay, utcHour, utcMinute, lat, lon);
     }
 
-    // コンテンツ
-    const sun  = (window as any).__fp_sun[sunSign];
-    const moon = (window as any).__fp_moon[moonSign];
-    const asc  = ascSign ? (window as any).__fp_asc[ascSign] : null;
+    // コンテンツ（optional chaining で undefined でも例外にならない）
+    const fpSun  = (window as any).__fp_sun  ?? {};
+    const fpMoon = (window as any).__fp_moon ?? {};
+    const fpAsc  = (window as any).__fp_asc  ?? {};
+    const sun  = fpSun[sunSign];
+    const moon = fpMoon[moonSign];
+    const asc  = ascSign ? fpAsc[ascSign] : null;
+
+    // コンテンツが取得できていない場合はエラー
+    if (!sun || !moon) {
+      hide("state-loading");
+      show("state-error");
+      return;
+    }
 
     // --- 描画 ---
     hide("state-loading");
@@ -407,9 +417,12 @@ const spikeStars = [{ x: rnd(70, 90), y: rnd(5, 20) }];
     }
 
     // アセンダント
-    if (asc && ascSign) {
-      setText("asc-label", asc.label);
-      setText("asc-body",  asc.body.trim());
+    // ③ hasTime かつ ascSign が算出できた場合のみ section-asc を表示
+    if (hasTime && ascSign) {
+      if (asc) {
+        setText("asc-label", asc.label);
+        setText("asc-body",  asc.body.trim());
+      }
       show("section-asc");
     } else {
       show("section-asc-missing");
@@ -430,6 +443,7 @@ const spikeStars = [{ x: rnd(70, 90), y: rnd(5, 20) }];
     } catch (err) {
       console.error("[fortuneP] render error:", err);
       hide("state-loading");
+      hide("state-result");   // ② state-resultも隠してからエラーを表示
       show("state-error");
     }
   }

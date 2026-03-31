@@ -9,8 +9,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@astrodraw/astrochart": "^3.0.2",
+    "astro": "^4.16.0",
     "astronomy-engine": "^2.1.19",
-    "astro": "^4.16.0"
+    "circular-natal-horoscope-js": "^1.1.0",
+    "tz-lookup": "^6.1.25"
   },
   "devDependencies": {
     "@astrojs/tailwind": "^5.1.3",

@@ -1,0 +1,227 @@
+---
+import Layout from "../layouts/Layout.astro";
+import "../styles/global.css";
+
+function rnd(a: number, b: number) { return a + Math.random() * (b - a); }
+const microStars = Array.from({ length: 110 }, () => ({
+  x: rnd(0, 100), y: rnd(0, 100),
+  s: Math.random() < 0.6 ? 0.8 : 1,
+  op: rnd(0.12, 0.45), dur: rnd(3, 8), del: rnd(0, 7),
+  color: Math.random() < 0.3 ? '#d0e4ff' : '#ffffff',
+}));
+const smallStars = Array.from({ length: 40 }, () => ({
+  x: rnd(0, 100), y: rnd(0, 100),
+  s: rnd(1.2, 2), op: rnd(0.35, 0.7), dur: rnd(2, 5), del: rnd(0, 5),
+  color: Math.random() < 0.35 ? '#c8dcff' : '#ffffff',
+}));
+const brightStars = Array.from({ length: 5 }, () => ({
+  x: rnd(5, 95), y: rnd(5, 90),
+  s: rnd(2.3, 3), op: rnd(0.65, 1), dur: rnd(2, 4), del: rnd(0, 4),
+}));
+const spikeStars = [{ x: rnd(70, 90), y: rnd(5, 20) }];
+---
+
+<Layout title="ネイタルホロスコープ">
+<main class="horo-main">
+
+  <!-- 背景 -->
+  <div class="horo-bg"></div>
+
+  <!-- 星空 -->
+  <div class="layer-stars" aria-hidden="true">
+    {microStars.map(s => (
+      <div class="star-micro" style={`left:${s.x}%;top:${s.y}%;width:${s.s}px;height:${s.s}px;opacity:${s.op};animation-duration:${s.dur}s;animation-delay:${s.del}s;background:${s.color}`}></div>
+    ))}
+    {smallStars.map(s => (
+      <div class="star-small" style={`left:${s.x}%;top:${s.y}%;width:${s.s}px;height:${s.s}px;opacity:${s.op};animation-duration:${s.dur}s;animation-delay:${s.del}s;background:${s.color}`}></div>
+    ))}
+    {brightStars.map(s => (
+      <div class="star-bright" style={`left:${s.x}%;top:${s.y}%;width:${s.s}px;height:${s.s}px;opacity:${s.op};animation-duration:${s.dur}s;animation-delay:${s.del}s`}></div>
+    ))}
+    {spikeStars.map(s => (
+      <div class="star-spike" style={`left:${s.x}%;top:${s.y}%`}></div>
+    ))}
+  </div>
+
+  <!-- コンテンツ -->
+  <div class="horo-content">
+
+    <!-- ヘッダー -->
+    <div class="horo-header fade-in">
+      <a href={import.meta.env.BASE_URL} class="font-cinzel text-sm text-fp-gold/50 hover:text-fp-gold/80 transition-colors">
+        fortuneP
+      </a>
+      <p class="horo-title">Natal Horoscope</p>
+      <p class="horo-subtitle">あなたの出生図を作成します</p>
+    </div>
+
+    <!-- 入力フォーム -->
+    <section id="horo-form-section" class="glass-card horo-form-card fade-in fade-in-delay-1">
+      <!-- Step 2 で実装 -->
+      <p class="text-fp-pearl/40 text-sm text-center py-8">フォーム準備中</p>
+    </section>
+
+    <!-- ローディング -->
+    <div id="horo-loading" class="hidden state-center fade-in">
+      <span class="text-3xl text-fp-gold" style="animation: star-pulse 2s ease-in-out infinite">&#x2726;</span>
+      <p class="text-sm text-fp-pearl/40 mt-3">ホロスコープを計算しています</p>
+    </div>
+
+    <!-- エラー -->
+    <div id="horo-error" class="hidden state-center fade-in">
+      <p id="horo-error-msg" class="text-fp-pearl/60 mb-4">エラーが発生しました</p>
+    </div>
+
+    <!-- 結果: チャート -->
+    <section id="horo-chart-section" class="hidden fade-in">
+      <div id="horo-chart-container" class="horo-chart-wrap"></div>
+    </section>
+
+    <!-- 結果: テキスト要約 -->
+    <section id="horo-result-section" class="hidden fade-in fade-in-delay-1">
+      <div id="horo-result-content"></div>
+    </section>
+
+    <!-- フッター -->
+    <div class="horo-footer fade-in fade-in-delay-2">
+      <a href={`${import.meta.env.BASE_URL}/input`} class="text-fp-pearl/30 text-xs hover:text-fp-pearl/60 transition-colors">
+        ← 簡易占いに戻る
+      </a>
+    </div>
+
+  </div>
+
+</main>
+</Layout>
+
+<style>
+.font-cinzel { font-family: 'Cinzel', serif; }
+
+.horo-main {
+  position: relative;
+  min-height: 100svh;
+  overflow: hidden;
+}
+
+.horo-bg {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 30% 20% at 72% 14%, rgba(175,50,150,0.11) 0%, transparent 100%),
+    radial-gradient(ellipse 55% 65% at 38% 60%, rgba(85,58,22,0.09) 0%, transparent 100%),
+    radial-gradient(ellipse 130% 100% at 50% 45%, rgba(16,32,82,0.55) 0%, rgba(3,7,20,0.92) 60%, #010509 100%),
+    radial-gradient(ellipse 80% 25% at 50% 108%, rgba(28,58,138,0.28) 0%, transparent 100%),
+    #010509;
+  z-index: 0;
+}
+
+.layer-stars {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.star-micro {
+  position: absolute; border-radius: 50%;
+  animation: twinkle-slow ease-in-out infinite;
+}
+.star-small {
+  position: absolute; border-radius: 50%;
+  animation: twinkle ease-in-out infinite;
+}
+.star-bright {
+  position: absolute; border-radius: 50%;
+  background: #ffffff;
+  box-shadow:
+    0 0 2px 1px rgba(255,255,255,0.95),
+    0 0 6px 2px rgba(200,220,255,0.6),
+    0 0 14px 5px rgba(160,190,255,0.25),
+    0 0 28px 8px rgba(120,160,255,0.1);
+  animation: twinkle-bright ease-in-out infinite;
+}
+.star-spike {
+  position: absolute;
+  width: 4px; height: 4px; margin: -2px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow:
+    0 0 3px 2px rgba(255,255,255,1),
+    0 0 8px 4px rgba(200,225,255,0.7),
+    0 0 20px 8px rgba(160,195,255,0.35),
+    0 0 40px 14px rgba(120,165,255,0.12);
+  animation: spike-pulse 3s ease-in-out infinite;
+}
+.star-spike::before {
+  content: '';
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  width: 55px; height: 1px;
+  background: linear-gradient(to right, transparent, rgba(200,225,255,0.35) 30%, rgba(255,255,255,0.7) 50%, rgba(200,225,255,0.35) 70%, transparent);
+}
+.star-spike::after {
+  content: '';
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%) rotate(90deg);
+  width: 55px; height: 1px;
+  background: linear-gradient(to right, transparent, rgba(200,225,255,0.35) 30%, rgba(255,255,255,0.7) 50%, rgba(200,225,255,0.35) 70%, transparent);
+}
+
+@keyframes twinkle-slow { 0%,100%{opacity:inherit;transform:scale(1)} 50%{opacity:0.05;transform:scale(0.5)} }
+@keyframes twinkle      { 0%,100%{opacity:inherit;transform:scale(1)} 50%{opacity:0.1;transform:scale(0.6)} }
+@keyframes twinkle-bright { 0%,100%{opacity:inherit;transform:scale(1)} 40%{opacity:0.2;transform:scale(0.7)} 60%{opacity:0.2;transform:scale(0.7)} }
+@keyframes spike-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.55;transform:scale(0.85)} }
+@keyframes star-pulse {
+  0%,100% { opacity: 0.6; transform: scale(1); }
+  50%     { opacity: 1; transform: scale(1.12); }
+}
+
+.horo-content {
+  position: relative; z-index: 10;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 3rem;
+  display: flex; flex-direction: column;
+  gap: 1.5rem;
+}
+
+.horo-header {
+  text-align: center;
+  padding-top: 1rem;
+}
+.horo-title {
+  font-family: 'Cinzel', serif;
+  font-size: 1.5rem;
+  color: rgba(201,168,76,0.9);
+  letter-spacing: 0.15em;
+  margin-top: 1rem;
+}
+.horo-subtitle {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 0.8rem;
+  font-weight: 300;
+  color: rgba(232,224,208,0.4);
+  margin-top: 0.5rem;
+  letter-spacing: 0.08em;
+}
+
+.horo-form-card {
+  padding: 1.5rem;
+}
+
+.state-center {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 3rem 1rem;
+}
+
+.horo-chart-wrap {
+  display: flex; justify-content: center;
+  max-width: 500px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.horo-footer {
+  text-align: center;
+  padding: 2rem 0;
+}
+</style>

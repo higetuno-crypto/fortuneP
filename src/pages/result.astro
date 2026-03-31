@@ -331,7 +331,10 @@ const spikeStars = [{ x: rnd(70, 90), y: rnd(5, 20) }];
 
   async function render() {
     try {
-    const params = new URLSearchParams(window.location.search);
+    // window.location.searchが空の場合（GitHub Pagesのトレイリングスラッシュリダイレクトでパラメータが
+    // 失われた場合）、sessionStorageからフォールバック
+    const rawSearch = window.location.search || sessionStorage.getItem("__fp_params") || "";
+    const params = new URLSearchParams(rawSearch);
     const year  = parseInt(params.get("year")  ?? "");
     const month = parseInt(params.get("month") ?? "");
     const day   = parseInt(params.get("day")   ?? "");

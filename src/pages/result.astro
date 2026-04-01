@@ -488,6 +488,12 @@ const spikeStars = [{ x: rnd(70, 90), y: rnd(5, 20) }];
 </script>
 
 <style>
+/* Astroのスコープ付きスタイルは [data-astro-cid-xxx] が付いて詳細度が上がるため、
+   .hidden の display:none が負けてしまう問題を :global で修正 */
+:global(.hidden) {
+  display: none !important;
+}
+
 .fp-result-main {
   position: relative;
   min-height: 100svh;

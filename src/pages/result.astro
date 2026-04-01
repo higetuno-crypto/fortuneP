@@ -115,6 +115,13 @@ const spikeStars = [{ x: rnd(70, 90), y: rnd(5, 20) }];
         </div>
       </div>
 
+      <!-- ホロスコープチャート -->
+      <section id="section-horoscope" class="hidden horo-section glass-card fade-in fade-in-delay-2">
+        <p class="horo-section-title">Natal Horoscope</p>
+        <div id="horo-chart-container" class="horo-chart-wrap"></div>
+        <div id="horo-result-content" class="horo-result-body"></div>
+      </section>
+
       <!-- 太陽星座 -->
       <section class="reading-card glass-card fade-in fade-in-delay-2">
         <div class="reading-header">
@@ -239,6 +246,9 @@ const spikeStars = [{ x: rnd(70, 90), y: rnd(5, 20) }];
 
 <script>
   import { getSunSign, getMoonSign, getAscendant, toJaLabel, toSymbol } from "../lib/index";
+  import { calculateHoroscope } from "../components/horoscope/HoroscopeCalc";
+  import { renderHoroscopeChart } from "../components/horoscope/HoroscopeChart";
+  import { renderHoroscopeResult } from "../components/horoscope/HoroscopeResult";
 
   // ======== 用語辞典 ========
   const GLOSSARY: Record<string, { title: string; body: string }> = {
@@ -406,6 +416,31 @@ const spikeStars = [{ x: rnd(70, 90), y: rnd(5, 20) }];
     } else {
       setText("badge-asc-symbol", "—");
       setText("badge-asc-label",  "未算出");
+    }
+
+    // ホロスコープチャート（非同期・失敗してもメイン描画を止めない）
+    try {
+      const { lat: horoLat, lon: horoLon } = resolveCoords(birthplace);
+      const isUnknownTime = !hasTime;
+      const isApproximateTime = false; // result.astroでは具体的時刻 or 未入力のみ
+      const horoData = calculateHoroscope({
+        year, month, day,
+        hour: hasTime ? hour : 12,
+        minute: hasTime ? minute : 0,
+        lat: horoLat, lon: horoLon,
+        locationName: birthplace || "東京",
+        isApproximateTime,
+        isUnknownTime,
+      });
+      show("section-horoscope");
+      // チャート描画は少し遅延させてDOMが確定してから
+      setTimeout(() => {
+        renderHoroscopeChart("horo-chart-container", horoData);
+        renderHoroscopeResult("horo-result-content", horoData);
+      }, 100);
+    } catch (horoErr) {
+      console.warn("[fortuneP] horoscope render failed:", horoErr);
+      // ホロスコープ失敗はサイレントに。メイン占い結果には影響しない
     }
 
     // 太陽
@@ -864,5 +899,87 @@ const spikeStars = [{ x: rnd(70, 90), y: rnd(5, 20) }];
 .share-btn:active {
   transform: scale(0.95);
   background: rgba(201,168,76,0.18);
+}
+
+/* ===== ホロスコープセクション ===== */
+.horo-section {
+  padding: 1.25rem 1rem 1.5rem;
+  display: flex; flex-direction: column;
+  gap: 1rem;
+}
+.horo-section-title {
+  font-family: 'Cinzel', serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.3em;
+  color: rgba(201,168,76,0.5);
+  text-align: center;
+  text-transform: uppercase;
+}
+.horo-chart-wrap {
+  display: flex; justify-content: center;
+  width: 100%;
+}
+.horo-chart-wrap svg {
+  max-width: 100%;
+  height: auto;
+}
+.horo-result-body {
+  display: flex; flex-direction: column;
+  gap: 1rem;
+}
+
+/* ホロスコープ: 注意書き */
+.horo-notice {
+  padding: 0.75rem 1rem;
+  font-size: 0.72rem;
+  color: rgba(232,224,208,0.5);
+  text-align: center;
+}
+
+/* ホロスコープ: サマリー */
+.horo-summary {
+  text-align: center;
+  display: flex; flex-direction: column; gap: 0.25rem;
+}
+.horo-summary-line {
+  font-size: 0.82rem;
+  color: rgba(232,224,208,0.6);
+}
+.horo-summary-line strong {
+  color: rgba(232,224,208,0.9);
+}
+
+/* ホロスコープ: テーブル */
+.horo-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.horo-table-title {
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  color: rgba(201,168,76,0.45);
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+.horo-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+  color: rgba(232,224,208,0.7);
+}
+.horo-table th {
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  color: rgba(232,224,208,0.35);
+  text-align: left;
+  padding: 0.3rem 0.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.horo-table td {
+  padding: 0.35rem 0.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.horo-table tr:last-child td {
+  border-bottom: none;
 }
 </style>

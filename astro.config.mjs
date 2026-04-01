@@ -9,6 +9,7 @@ export default defineConfig({
     resolve: {
       alias: {
         "@/lib": "/src/lib",
+        "circular-natal-horoscope-js": new URL("node_modules/circular-natal-horoscope-js/dist/index.js", import.meta.url).pathname,
       },
     },
   },

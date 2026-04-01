@@ -87,14 +87,21 @@ const spikeStars = [{ x: rnd(70, 90), y: rnd(5, 20) }];
     <!-- 結果 -->
     <div id="state-result" class="hidden result-content">
 
+      <!-- ホロスコープチャート（最上部） -->
+      <section id="section-horoscope" class="hidden horo-section glass-card fade-in">
+        <p class="horo-section-title">✦ Natal Horoscope ✦</p>
+        <div id="horo-chart-container" class="horo-chart-wrap"></div>
+        <div id="horo-result-content" class="horo-result-body"></div>
+      </section>
+
       <!-- ヘッダー -->
-      <div class="result-header fade-in">
+      <div class="result-header fade-in fade-in-delay-1">
         <p class="result-eyebrow">✦ Your Reading ✦</p>
         <p id="result-date" class="result-date"></p>
       </div>
 
       <!-- 3要素バッジ -->
-      <div id="result-badges" class="badges-card glass-card fade-in fade-in-delay-1">
+      <div id="result-badges" class="badges-card glass-card fade-in fade-in-delay-2">
         <p class="badges-title">あなたの3つの星</p>
         <div class="badges-grid">
           <div class="badge-item">
@@ -114,13 +121,6 @@ const spikeStars = [{ x: rnd(70, 90), y: rnd(5, 20) }];
           </div>
         </div>
       </div>
-
-      <!-- ホロスコープチャート -->
-      <section id="section-horoscope" class="hidden horo-section glass-card fade-in fade-in-delay-2">
-        <p class="horo-section-title">Natal Horoscope</p>
-        <div id="horo-chart-container" class="horo-chart-wrap"></div>
-        <div id="horo-result-content" class="horo-result-body"></div>
-      </section>
 
       <!-- 太陽星座 -->
       <section class="reading-card glass-card fade-in fade-in-delay-2">
@@ -400,6 +400,7 @@ const spikeStars = [{ x: rnd(70, 90), y: rnd(5, 20) }];
 
     // --- 描画 ---
     hide("state-loading");
+    hide("state-error");   // 念のため明示的に隠す（二重表示防止）
     show("state-result");
 
     // 日付
@@ -418,29 +419,26 @@ const spikeStars = [{ x: rnd(70, 90), y: rnd(5, 20) }];
       setText("badge-asc-label",  "未算出");
     }
 
-    // ホロスコープチャート（非同期・失敗してもメイン描画を止めない）
+    // ホロスコープチャート（失敗してもメイン描画を止めない）
     try {
-      const { lat: horoLat, lon: horoLon } = resolveCoords(birthplace);
-      const isUnknownTime = !hasTime;
-      const isApproximateTime = false; // result.astroでは具体的時刻 or 未入力のみ
+      const [horoLat, horoLon] = resolveCoords(birthplace);
       const horoData = calculateHoroscope({
         year, month, day,
         hour: hasTime ? hour : 12,
         minute: hasTime ? minute : 0,
         lat: horoLat, lon: horoLon,
         locationName: birthplace || "東京",
-        isApproximateTime,
-        isUnknownTime,
+        isApproximateTime: false,
+        isUnknownTime: !hasTime,
       });
       show("section-horoscope");
-      // チャート描画は少し遅延させてDOMが確定してから
-      setTimeout(() => {
+      // rAFでレイアウト確定後に描画（コンテナ幅の取得に必要）
+      requestAnimationFrame(() => {
         renderHoroscopeChart("horo-chart-container", horoData);
         renderHoroscopeResult("horo-result-content", horoData);
-      }, 100);
+      });
     } catch (horoErr) {
       console.warn("[fortuneP] horoscope render failed:", horoErr);
-      // ホロスコープ失敗はサイレントに。メイン占い結果には影響しない
     }
 
     // 太陽

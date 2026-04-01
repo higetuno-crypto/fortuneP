@@ -1,4 +1,14 @@
 import type { ChartData } from "../../types/horoscope";
+// @astrodraw/astrochartはCJS UMDライブラリのためViteエイリアスで解決
+// astro.config.mjsで "astrochart-lib" → dist/astrochart.js にエイリアスを設定済み
+import AstroChartLib from "astrochart-lib";
+
+// UMDエクスポートの形式に対応（Chart クラスを取得）
+const ChartClass: any =
+  (AstroChartLib as any)?.Chart ??
+  (AstroChartLib as any)?.default?.Chart ??
+  (AstroChartLib as any)?.default ??
+  AstroChartLib;
 
 /**
  * ChartDataを@astrodraw/astrochartが要求する形式に変換し、SVGを描画する
@@ -14,14 +24,13 @@ export function renderHoroscopeChart(
   container.innerHTML = "";
 
   // レスポンシブ: コンテナ幅に合わせる（max 500px）
-  const width = Math.min(container.clientWidth || 380, 500);
+  const width = Math.min(container.clientWidth || 340, 500);
   const height = width;
 
   // astrochart用のデータ形式に変換
   const planets: Record<string, number[]> = {};
   for (const p of data.planets) {
-    const retro = p.retrograde ? 1 : 0;
-    planets[p.name] = [p.degree, retro];
+    planets[p.name] = p.retrograde ? [p.degree, 1] : [p.degree];
   }
 
   // ASC・MCを追加
@@ -40,10 +49,7 @@ export function renderHoroscopeChart(
 
   const astroData = { planets, cusps };
 
-  // 動的import（@astrodraw/astrochartはブラウザ向けなのでdynamic importで読む）
-  import("@astrodraw/astrochart").then((module) => {
-    const ChartClass = module.default?.Chart ?? module.Chart ?? module.default;
-
+  try {
     const chart = new ChartClass(containerId, width, height, {
       // fortunePの世界観に合わせたカラー設定
       COLOR_BACKGROUND: "transparent",
@@ -64,11 +70,17 @@ export function renderHoroscopeChart(
 
     chart.radix(astroData);
 
-    // SVGにスタイル補正（背景透過用）
+    // SVGにスタイル補正（背景透過・レスポンシブ）
     const svg = container.querySelector("svg");
     if (svg) {
       svg.style.maxWidth = "100%";
       svg.style.height = "auto";
+      svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+      svg.removeAttribute("width");
+      svg.removeAttribute("height");
     }
-  });
+  } catch (e) {
+    console.warn("[fortuneP] astrochart render error:", e);
+    container.innerHTML = "";
+  }
 }

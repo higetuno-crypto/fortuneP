@@ -330,157 +330,157 @@ const spikeStars = [{ x: rnd(70, 90), y: rnd(5, 20) }];
   }
 
   function show(id: string) {
-    document.getElementById(id)!.classList.remove("hidden");
+    document.getElementById(id)?.classList.remove("hidden");
   }
   function hide(id: string) {
-    document.getElementById(id)!.classList.add("hidden");
+    document.getElementById(id)?.classList.add("hidden");
   }
   function setText(id: string, text: string) {
-    document.getElementById(id)!.textContent = text;
+    const el = document.getElementById(id);
+    if (el) el.textContent = text;
+  }
+
+  // ローディング/エラー/結果を排他的に切り替える（二重表示を根本から防止）
+  type AppState = "loading" | "error" | "result";
+  function setState(s: AppState) {
+    document.getElementById("state-loading")!.classList.toggle("hidden", s !== "loading");
+    document.getElementById("state-error")!.classList.toggle("hidden",   s !== "error");
+    document.getElementById("state-result")!.classList.toggle("hidden",  s !== "result");
   }
 
   async function render() {
+    setState("loading");
     try {
-    // window.location.searchが空の場合（GitHub Pagesのトレイリングスラッシュリダイレクトでパラメータが
-    // 失われた場合）、sessionStorageからフォールバック
-    const rawSearch = window.location.search || sessionStorage.getItem("__fp_params") || "";
-    const params = new URLSearchParams(rawSearch);
-    const year  = parseInt(params.get("year")  ?? "");
-    const month = parseInt(params.get("month") ?? "");
-    const day   = parseInt(params.get("day")   ?? "");
+      // URLパラメータ取得（GitHub Pagesのtrailing-slash redirectでパラメータが
+      // 失われる場合があるためsessionStorageをフォールバックに使う）
+      const rawSearch = window.location.search || sessionStorage.getItem("__fp_params") || "";
+      const params = new URLSearchParams(rawSearch);
+      const year  = parseInt(params.get("year")  ?? "");
+      const month = parseInt(params.get("month") ?? "");
+      const day   = parseInt(params.get("day")   ?? "");
 
-    if (!year || !month || !day || isNaN(year) || isNaN(month) || isNaN(day)) {
-      hide("state-loading");
-      show("state-error");
-      return;
-    }
-
-    const hourRaw    = params.get("hour");
-    const minuteRaw  = params.get("minute");
-    const birthplace = params.get("birthplace") ?? "";
-
-    const hasTime = hourRaw !== "" && hourRaw !== null;
-    const hour    = hasTime ? parseInt(hourRaw!) : 12;
-    const minute  = minuteRaw ? parseInt(minuteRaw) : 0;
-
-    // JST → UTC 変換（占星術計算はUTC基準）
-    // ユーザー入力はJST（日本標準時 = UTC+9）前提
-    const JST_OFFSET = 9;
-    const utcDate = new Date(Date.UTC(year, month - 1, day, hour - JST_OFFSET, minute));
-    const utcYear   = utcDate.getUTCFullYear();
-    const utcMonth  = utcDate.getUTCMonth() + 1;
-    const utcDay    = utcDate.getUTCDate();
-    const utcHour   = utcDate.getUTCHours();
-    const utcMinute = utcDate.getUTCMinutes();
-
-    // 計算（UTC時刻で）
-    const sunSign  = getSunSign(month, day);
-    const moonSign = getMoonSign(utcYear, utcMonth, utcDay, utcHour, utcMinute);
-
-    let ascSign: string | undefined = undefined;
-    if (hasTime) {
-      const [lat, lon] = resolveCoords(birthplace);
-      ascSign = getAscendant(utcYear, utcMonth, utcDay, utcHour, utcMinute, lat, lon);
-    }
-
-    // コンテンツ（optional chaining で undefined でも例外にならない）
-    const fpSun  = (window as any).__fp_sun  ?? {};
-    const fpMoon = (window as any).__fp_moon ?? {};
-    const fpAsc  = (window as any).__fp_asc  ?? {};
-    const sun  = fpSun[sunSign];
-    const moon = fpMoon[moonSign];
-    const asc  = ascSign ? fpAsc[ascSign] : null;
-
-    // コンテンツが取得できていない場合はエラー
-    if (!sun || !moon) {
-      hide("state-loading");
-      show("state-error");
-      return;
-    }
-
-    // --- 描画 ---
-    hide("state-loading");
-    hide("state-error");   // 念のため明示的に隠す（二重表示防止）
-    show("state-result");
-
-    // 日付
-    setText("result-date", `${year}年${month}月${day}日生まれ`);
-
-    // バッジ
-    setText("badge-sun-symbol",  toSymbol(sunSign));
-    setText("badge-sun-label",   toJaLabel(sunSign));
-    setText("badge-moon-symbol", toSymbol(moonSign));
-    setText("badge-moon-label",  toJaLabel(moonSign));
-    if (ascSign) {
-      setText("badge-asc-symbol", toSymbol(ascSign));
-      setText("badge-asc-label",  toJaLabel(ascSign));
-    } else {
-      setText("badge-asc-symbol", "—");
-      setText("badge-asc-label",  "未算出");
-    }
-
-    // ホロスコープチャート（失敗してもメイン描画を止めない）
-    try {
-      const [horoLat, horoLon] = resolveCoords(birthplace);
-      const horoData = calculateHoroscope({
-        year, month, day,
-        hour: hasTime ? hour : 12,
-        minute: hasTime ? minute : 0,
-        lat: horoLat, lon: horoLon,
-        locationName: birthplace || "東京",
-        isApproximateTime: false,
-        isUnknownTime: !hasTime,
-      });
-      show("section-horoscope");
-      // rAFでレイアウト確定後に描画（コンテナ幅の取得に必要）
-      requestAnimationFrame(() => {
-        renderHoroscopeChart("horo-chart-container", horoData);
-        renderHoroscopeResult("horo-result-content", horoData);
-      });
-    } catch (horoErr) {
-      console.warn("[fortuneP] horoscope render failed:", horoErr);
-    }
-
-    // 太陽
-    setText("sun-label", sun.label);
-    setText("sun-body",  sun.body.trim());
-
-    // 月
-    setText("moon-label", moon.label);
-    setText("moon-body",  moon.body.trim());
-    if (!hasTime) {
-      show("moon-note");
-    }
-
-    // アセンダント
-    // ③ hasTime かつ ascSign が算出できた場合のみ section-asc を表示
-    if (hasTime && ascSign) {
-      if (asc) {
-        setText("asc-label", asc.label);
-        setText("asc-body",  asc.body.trim());
+      if (!year || !month || !day || isNaN(year) || isNaN(month) || isNaN(day)) {
+        setState("error");
+        return;
       }
-      show("section-asc");
-    } else {
-      show("section-asc-missing");
-    }
 
-    // シェアカード
-    setText("sc-sun-sym",  toSymbol(sunSign));
-    setText("sc-sun-name", toJaLabel(sunSign));
-    setText("sc-moon-sym", toSymbol(moonSign));
-    setText("sc-moon-name", toJaLabel(moonSign));
-    if (ascSign) {
-      setText("sc-asc-sym",  toSymbol(ascSign));
-      setText("sc-asc-name", toJaLabel(ascSign));
-    } else {
-      const ascItem = document.getElementById("sc-asc-item");
-      if (ascItem) ascItem.style.display = 'none';
-    }
+      const hourRaw    = params.get("hour");
+      const minuteRaw  = params.get("minute");
+      const birthplace = params.get("birthplace") ?? "";
+
+      const hasTime = hourRaw !== null && hourRaw !== "";
+      const hour    = hasTime ? parseInt(hourRaw!) : 12;
+      const minute  = minuteRaw ? parseInt(minuteRaw) : 0;
+
+      // JST → UTC 変換
+      const JST_OFFSET = 9;
+      const utcDate = new Date(Date.UTC(year, month - 1, day, hour - JST_OFFSET, minute));
+      const utcYear   = utcDate.getUTCFullYear();
+      const utcMonth  = utcDate.getUTCMonth() + 1;
+      const utcDay    = utcDate.getUTCDate();
+      const utcHour   = utcDate.getUTCHours();
+      const utcMinute = utcDate.getUTCMinutes();
+
+      // 星座計算
+      const sunSign  = getSunSign(month, day);
+      const moonSign = getMoonSign(utcYear, utcMonth, utcDay, utcHour, utcMinute);
+      let ascSign: string | undefined = undefined;
+      if (hasTime) {
+        const [lat, lon] = resolveCoords(birthplace);
+        ascSign = getAscendant(utcYear, utcMonth, utcDay, utcHour, utcMinute, lat, lon);
+      }
+
+      // コンテンツ取得
+      const fpSun  = (window as any).__fp_sun  ?? {};
+      const fpMoon = (window as any).__fp_moon ?? {};
+      const fpAsc  = (window as any).__fp_asc  ?? {};
+      const sun  = fpSun[sunSign];
+      const moon = fpMoon[moonSign];
+      const asc  = ascSign ? fpAsc[ascSign] : null;
+
+      if (!sun || !moon) {
+        setState("error");
+        return;
+      }
+
+      // ===== 描画開始 =====
+      setState("result");
+
+      // 日付
+      setText("result-date", `${year}年${month}月${day}日生まれ`);
+
+      // バッジ
+      setText("badge-sun-symbol",  toSymbol(sunSign));
+      setText("badge-sun-label",   toJaLabel(sunSign));
+      setText("badge-moon-symbol", toSymbol(moonSign));
+      setText("badge-moon-label",  toJaLabel(moonSign));
+      if (ascSign) {
+        setText("badge-asc-symbol", toSymbol(ascSign));
+        setText("badge-asc-label",  toJaLabel(ascSign));
+      } else {
+        setText("badge-asc-symbol", "—");
+        setText("badge-asc-label",  "未算出");
+      }
+
+      // ホロスコープチャート（失敗してもメイン描画を止めない）
+      try {
+        const [horoLat, horoLon] = resolveCoords(birthplace);
+        const horoData = calculateHoroscope({
+          year, month, day,
+          hour: hasTime ? hour : 12,
+          minute: hasTime ? minute : 0,
+          lat: horoLat, lon: horoLon,
+          locationName: birthplace || "東京",
+          isApproximateTime: false,
+          isUnknownTime: !hasTime,
+        });
+        show("section-horoscope");
+        requestAnimationFrame(() => {
+          renderHoroscopeChart("horo-chart-container", horoData);
+          renderHoroscopeResult("horo-result-content", horoData);
+        });
+      } catch (horoErr) {
+        console.warn("[fortuneP] horoscope render failed:", horoErr);
+      }
+
+      // 太陽
+      setText("sun-label", sun.label);
+      setText("sun-body",  sun.body.trim());
+
+      // 月
+      setText("moon-label", moon.label);
+      setText("moon-body",  moon.body.trim());
+      if (!hasTime) show("moon-note");
+
+      // アセンダント（section-asc と section-asc-missing は排他表示）
+      if (hasTime && ascSign) {
+        if (asc) {
+          setText("asc-label", asc.label);
+          setText("asc-body",  asc.body.trim());
+        }
+        hide("section-asc-missing");
+        show("section-asc");
+      } else {
+        hide("section-asc");
+        show("section-asc-missing");
+      }
+
+      // シェアカード
+      setText("sc-sun-sym",  toSymbol(sunSign));
+      setText("sc-sun-name", toJaLabel(sunSign));
+      setText("sc-moon-sym", toSymbol(moonSign));
+      setText("sc-moon-name", toJaLabel(moonSign));
+      if (ascSign) {
+        setText("sc-asc-sym",  toSymbol(ascSign));
+        setText("sc-asc-name", toJaLabel(ascSign));
+      } else {
+        const ascItem = document.getElementById("sc-asc-item");
+        if (ascItem) ascItem.style.display = "none";
+      }
+
     } catch (err) {
       console.error("[fortuneP] render error:", err);
-      hide("state-loading");
-      hide("state-result");   // ② state-resultも隠してからエラーを表示
-      show("state-error");
+      setState("error");
     }
   }
 

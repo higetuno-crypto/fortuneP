@@ -1,0 +1,449 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import "../../styles/global.css";
+
+function rnd(a: number, b: number) { return a + Math.random() * (b - a); }
+
+const microStars = Array.from({ length: 320 }, () => ({
+  x: rnd(-2, 102), y: rnd(-2, 102),
+  s: Math.random() < 0.6 ? 0.8 : 1,
+  op: rnd(0.15, 0.52),
+  dur: rnd(3, 9),
+  del: rnd(0, 9),
+  color: Math.random() < 0.3 ? '#d0e4ff' : '#ffffff',
+}));
+
+const smallStars = Array.from({ length: 65 }, () => ({
+  x: rnd(0, 100), y: rnd(0, 100),
+  s: rnd(1.2, 2),
+  op: rnd(0.45, 0.85),
+  dur: rnd(2, 5),
+  del: rnd(0, 5),
+  color: Math.random() < 0.4 ? '#c8dcff' : '#ffffff',
+}));
+
+const brightStars = Array.from({ length: 8 }, () => ({
+  x: rnd(5, 95), y: rnd(5, 90),
+  s: rnd(2.5, 3.5),
+  op: rnd(0.75, 1),
+  dur: rnd(2, 4),
+  del: rnd(0, 4),
+}));
+
+const spikeStars = [
+  { x: rnd(10, 30), y: rnd(10, 30) },
+  { x: rnd(65, 88), y: rnd(60, 85) },
+];
+
+const blazingY = rnd(10, 28);
+---
+
+<Layout title="Card — fortuneP">
+<main class="card-main">
+
+  <!-- 背景 -->
+  <div class="bg-space"></div>
+
+  <!-- 星空レイヤー -->
+  <div class="layer-stars" aria-hidden="true">
+    {microStars.map(s => (
+      <div class="star-micro"
+        style={`left:${s.x}%;top:${s.y}%;width:${s.s}px;height:${s.s}px;opacity:${s.op};animation-duration:${s.dur}s;animation-delay:${s.del}s;background:${s.color}`}></div>
+    ))}
+    {smallStars.map(s => (
+      <div class="star-small"
+        style={`left:${s.x}%;top:${s.y}%;width:${s.s}px;height:${s.s}px;opacity:${s.op};animation-duration:${s.dur}s;animation-delay:${s.del}s;background:${s.color}`}></div>
+    ))}
+    {brightStars.map(s => (
+      <div class="star-bright"
+        style={`left:${s.x}%;top:${s.y}%;width:${s.s}px;height:${s.s}px;opacity:${s.op};animation-duration:${s.dur}s;animation-delay:${s.del}s`}></div>
+    ))}
+    {spikeStars.map(s => (
+      <div class="star-spike" style={`left:${s.x}%;top:${s.y}%`}></div>
+    ))}
+  </div>
+
+  <!-- 流れ星 -->
+  <div class="layer-shooting" aria-hidden="true">
+    <div class="blazing-star" style={`top:${blazingY.toFixed(1)}%`}>
+      <div class="blazing-head"></div>
+      <div class="trail-orb large"  style="left:22px;top:calc(50% + 2px)"></div>
+      <div class="trail-orb large"  style="left:38px;top:calc(50% - 4px)"></div>
+      <div class="trail-orb large"  style="left:55px;top:calc(50% + 5px)"></div>
+      <div class="trail-orb mid"    style="left:76px;top:calc(50% - 3px)"></div>
+      <div class="trail-orb mid"    style="left:99px;top:calc(50% + 7px)"></div>
+      <div class="trail-orb mid"    style="left:124px;top:calc(50% - 5px)"></div>
+      <div class="trail-orb small"  style="left:155px;top:calc(50% + 9px)"></div>
+      <div class="trail-orb small"  style="left:190px;top:calc(50% - 7px)"></div>
+      <div class="trail-orb small"  style="left:228px;top:calc(50% + 4px)"></div>
+    </div>
+  </div>
+
+  <!-- ボケ玉 -->
+  <div class="layer-bokeh" aria-hidden="true">
+    <div class="bokeh" style="width:70px;height:70px;top:2%;left:6%;animation-delay:0s"></div>
+    <div class="bokeh" style="width:45px;height:45px;top:4%;left:35%;animation-delay:1.2s"></div>
+    <div class="bokeh" style="width:80px;height:80px;top:1%;right:8%;animation-delay:0.5s"></div>
+    <div class="bokeh" style="width:35px;height:35px;top:6%;left:60%;animation-delay:1.9s"></div>
+  </div>
+
+  <!-- デジタル名刺カード -->
+  <div class="card-wrapper">
+    <div class="card-panel">
+      <!-- サイト名 -->
+      <div class="card-brand">
+        <span class="brand-star">✦</span>
+        <span class="brand-name">fortuneP</span>
+        <span class="brand-star">✦</span>
+      </div>
+      <div class="brand-tagline">Astrology Reading</div>
+
+      <!-- 区切り -->
+      <div class="card-divider"></div>
+
+      <!-- 名前 -->
+      <div class="card-name">Yuki</div>
+
+      <!-- 区切り -->
+      <div class="card-divider thin"></div>
+
+      <!-- 連絡先 -->
+      <ul class="card-contacts">
+        <li class="contact-row">
+          <span class="contact-label">Mail</span>
+          <span class="contact-value">higezlem02@gmail.com</span>
+        </li>
+        <li class="contact-row">
+          <span class="contact-label">Web</span>
+          <span class="contact-value">fortunep.net</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+</main>
+</Layout>
+
+<style>
+/* ======== レイアウト ======== */
+.card-main {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* ======== 背景 ======== */
+.bg-space {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 30% 20% at 72% 14%, rgba(175, 50, 150, 0.11) 0%, transparent 100%),
+    radial-gradient(ellipse 55% 65% at 38% 60%, rgba(85, 58, 22, 0.09) 0%, transparent 100%),
+    radial-gradient(ellipse 130% 100% at 50% 45%, rgba(16, 32, 82, 0.55) 0%, rgba(3, 7, 20, 0.92) 60%, #010509 100%),
+    radial-gradient(ellipse 80% 25% at 50% 108%, rgba(28, 58, 138, 0.28) 0%, transparent 100%),
+    #010509;
+  z-index: 0;
+}
+
+/* ======== 星空 ======== */
+.layer-stars, .layer-bokeh {
+  position: absolute; inset: 0;
+  pointer-events: none;
+}
+.layer-stars {
+  z-index: 1;
+  animation: star-drift 90s ease-in-out infinite;
+  transform-origin: 50% 50%;
+}
+.layer-bokeh { z-index: 2; }
+
+@keyframes star-drift {
+  0%,100% { transform: scale(1.000); }
+  50%     { transform: scale(1.018); }
+}
+
+.star-micro {
+  position: absolute;
+  border-radius: 50%;
+  animation: twinkle-slow ease-in-out infinite;
+}
+.star-small {
+  position: absolute;
+  border-radius: 50%;
+  animation: twinkle ease-in-out infinite;
+}
+.star-bright {
+  position: absolute;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow:
+    0 0 2px 1px rgba(255, 255, 255, 0.95),
+    0 0 6px 2px rgba(200, 220, 255, 0.6),
+    0 0 14px 5px rgba(160, 190, 255, 0.25),
+    0 0 28px 8px rgba(120, 160, 255, 0.1);
+  animation: twinkle-bright ease-in-out infinite;
+}
+.star-spike {
+  position: absolute;
+  width: 4px; height: 4px;
+  margin: -2px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow:
+    0 0 3px 2px rgba(255, 255, 255, 1),
+    0 0 8px 4px rgba(200, 225, 255, 0.7),
+    0 0 20px 8px rgba(160, 195, 255, 0.35),
+    0 0 40px 14px rgba(120, 165, 255, 0.12);
+  animation: spike-pulse 3s ease-in-out infinite;
+}
+.star-spike::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60px; height: 1px;
+  background: linear-gradient(to right,
+    transparent 0%, rgba(200, 225, 255, 0.35) 30%,
+    rgba(255, 255, 255, 0.7) 50%,
+    rgba(200, 225, 255, 0.35) 70%, transparent 100%);
+  border-radius: 1px;
+}
+.star-spike::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) rotate(90deg);
+  width: 60px; height: 1px;
+  background: linear-gradient(to right,
+    transparent 0%, rgba(200, 225, 255, 0.35) 30%,
+    rgba(255, 255, 255, 0.7) 50%,
+    rgba(200, 225, 255, 0.35) 70%, transparent 100%);
+  border-radius: 1px;
+}
+
+@keyframes twinkle-slow {
+  0%, 100% { opacity: inherit; transform: scale(1); }
+  50%       { opacity: 0.05; transform: scale(0.5); }
+}
+@keyframes twinkle {
+  0%, 100% { opacity: inherit; transform: scale(1); }
+  50%       { opacity: 0.1; transform: scale(0.6); }
+}
+@keyframes twinkle-bright {
+  0%, 100% { opacity: inherit; transform: scale(1); }
+  40%       { opacity: 0.2; transform: scale(0.7); }
+  60%       { opacity: 0.2; transform: scale(0.7); }
+}
+@keyframes spike-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.55; transform: scale(0.85); }
+}
+
+/* ======== 流れ星 ======== */
+.layer-shooting {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  overflow: hidden;
+}
+.blazing-star {
+  position: absolute; left: 0;
+  width: 280px; height: 40px;
+  animation: blazing-fly 22s linear infinite;
+  animation-delay: 6s;
+  animation-fill-mode: backwards;
+}
+.blazing-head {
+  position: absolute;
+  left: 0; top: 50%;
+  transform: translateY(-50%);
+  width: 56px; height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 25% 50%,
+    #ffffff 0%, #b0ffff 25%, #00ddee 55%, transparent 100%);
+  filter: blur(2px);
+  box-shadow:
+    0 0 8px 4px rgba(0, 220, 255, 0.9),
+    0 0 20px 10px rgba(0, 180, 220, 0.5),
+    0 0 40px 20px rgba(0, 140, 200, 0.2);
+}
+.trail-orb {
+  position: absolute;
+  border-radius: 50%;
+  background: #ffffff;
+  transform: translateY(-50%);
+}
+.trail-orb.large {
+  width: 11px; height: 11px;
+  box-shadow: 0 0 4px 2px rgba(160, 232, 255, 0.9), 0 0 12px 5px rgba(0, 180, 255, 0.4);
+}
+.trail-orb.mid {
+  width: 7px; height: 7px;
+  box-shadow: 0 0 3px 1px rgba(160, 232, 255, 0.8), 0 0 8px 3px rgba(0, 180, 255, 0.3);
+}
+.trail-orb.small {
+  width: 4px; height: 4px;
+  box-shadow: 0 0 2px 1px rgba(160, 232, 255, 0.6);
+}
+@keyframes blazing-fly {
+  0%   { transform: translateX(calc(100vw + 300px)); opacity: 0; }
+  5%   { opacity: 1; }
+  90%  { opacity: 0.85; }
+  100% { transform: translateX(-300px); opacity: 0; }
+}
+
+/* ======== ボケ玉 ======== */
+.bokeh {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, rgba(240,210,60,1) 0%, rgba(201,168,76,0.35) 45%, transparent 70%);
+  filter: blur(10px);
+  animation: bk-float 4.5s ease-in-out infinite;
+}
+@keyframes bk-float {
+  0%,100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-8px) scale(1.06); }
+}
+
+/* ======== カードパネル ======== */
+.card-wrapper {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 400px;
+  padding: 1.5rem;
+}
+
+.card-panel {
+  background: rgba(10, 14, 30, 0.72);
+  border: 1px solid rgba(201, 168, 76, 0.25);
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 2.8rem 2.4rem 2.6rem;
+  text-align: center;
+  box-shadow:
+    0 0 40px rgba(201, 168, 76, 0.08),
+    0 0 80px rgba(16, 32, 82, 0.4),
+    inset 0 1px 0 rgba(201, 168, 76, 0.1);
+}
+
+/* ======== サイト名 ======== */
+.card-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.brand-name {
+  font-family: 'Cinzel', serif;
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: #c9a84c;
+  text-shadow: 0 0 24px rgba(201,168,76,0.5), 0 0 60px rgba(201,168,76,0.18);
+}
+.brand-star {
+  font-size: 0.75rem;
+  color: rgba(201, 168, 76, 0.5);
+  text-shadow: 0 0 8px rgba(201,168,76,0.4);
+}
+.brand-tagline {
+  font-family: 'Cinzel', serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.35em;
+  color: rgba(201, 168, 76, 0.45);
+  margin-top: 5px;
+  text-transform: uppercase;
+}
+
+/* ======== 区切り線 ======== */
+.card-divider {
+  width: 60px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(201,168,76,0.45), transparent);
+  margin: 1.6rem auto;
+}
+.card-divider.thin {
+  width: 40px;
+  background: linear-gradient(to right, transparent, rgba(201,168,76,0.25), transparent);
+  margin: 1.2rem auto;
+}
+
+/* ======== 名前 ======== */
+.card-name {
+  font-family: 'Cinzel', serif;
+  font-size: 2.4rem;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  color: rgba(232, 224, 208, 0.95);
+  text-shadow: 0 0 20px rgba(232, 224, 208, 0.2);
+}
+
+/* ======== 連絡先 ======== */
+.card-contacts {
+  list-style: none;
+  padding: 0; margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+.contact-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.75rem;
+}
+.contact-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.58rem;
+  letter-spacing: 0.3em;
+  color: rgba(201, 168, 76, 0.55);
+  text-transform: uppercase;
+  min-width: 2.8em;
+  text-align: right;
+  flex-shrink: 0;
+}
+.contact-value {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 0.88rem;
+  font-weight: 300;
+  letter-spacing: 0.03em;
+  color: rgba(232, 224, 208, 0.88);
+  text-align: left;
+}
+
+/* ======== レスポンシブ ======== */
+@media (max-width: 380px) {
+  .card-panel {
+    padding: 2.2rem 1.6rem 2rem;
+  }
+  .brand-name {
+    font-size: 1.7rem;
+  }
+  .card-name {
+    font-size: 2rem;
+  }
+  .contact-value {
+    font-size: 0.8rem;
+  }
+}
+
+@media (min-width: 640px) {
+  .card-panel {
+    padding: 3.2rem 3rem 3rem;
+  }
+  .brand-name {
+    font-size: 2.2rem;
+  }
+  .card-name {
+    font-size: 2.8rem;
+  }
+  .contact-value {
+    font-size: 0.95rem;
+  }
+}
+</style>
